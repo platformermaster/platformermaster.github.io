@@ -6,15 +6,29 @@
 </head>
 <body>
     <h1>My Awesome Game</h1>
-    <button id="scoreBtn">Score! (+10 pts)</button>
-    <p>Current Score: <span id="scoreVal">0</span></p>
 
-    <!-- Load the Firebase SDK as ES modules -->
+    <!-- Auth UI -->
+    <div id="auth-section">
+        <h3>Login or Register</h3>
+        <input id="email" type="email" placeholder="Email"><br><br>
+        <input id="password" type="password" placeholder="Password"><br><br>
+        <button id="loginBtn">Login</button>
+        <button id="registerBtn">Register</button>
+    </div>
+
+    <!-- Game UI (Hidden until logged in) -->
+    <div id="game-section" style="display:none;">
+        <button id="scoreBtn">Score! (+10 pts)</button>
+        <p>Current Score: <span id="scoreVal">0</span></p>
+        <button id="logoutBtn">Logout</button>
+    </div>
+
     <script type="importmap">
       {
         "imports": {
           "firebase/app": "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js",
-          "firebase/database": "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js"
+          "firebase/database": "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js",
+          "firebase/auth": "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js"
         }
       }
     </script>
