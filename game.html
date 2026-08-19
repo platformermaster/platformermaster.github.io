@@ -3,147 +3,173 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>1v1 P2P 2D Shooter</title>
-  <!-- PeerJS library for serverless peer-to-peer multiplayer -->
+  <title>2D Battle Royale</title>
+  
+  <!-- PeerJS SDK -->
   <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+  
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      background-color: #1a1a1a;
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: #111; font-family: sans-serif; }
+    canvas { display: block; width: 100vw; height: 100vh; }
+    
+    #ui-overlay {
+      position: absolute;
+      top: 15px;
+      left: 20px;
+      right: 20px;
+      display: flex;
+      justify-content: space-between;
       color: #fff;
-      font-family: Arial, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-    }
-    #controls {
-      margin-bottom: 15px;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
-    input, button {
-      padding: 8px 12px;
-      font-size: 14px;
-      border: none;
-      border-radius: 4px;
-    }
-    button {
-      background-color: #4CAF50;
-      color: white;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-    #status {
+      font-size: 18px;
       font-weight: bold;
-      margin-bottom: 10px;
-      height: 20px;
+      pointer-events: none;
+      text-shadow: 1px 1px 3px #000;
+      z-index: 10;
     }
-    canvas {
-      background-color: #111;
-      border: 2px solid #444;
-      box-shadow: 0 0 15px rgba(0,0,0,0.5);
-    }
-    #instructions {
-      margin-top: 10px;
-      font-size: 12px;
-      color: #aaa;
+
+    #status-overlay {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: #fff;
+      font-size: 28px;
+      font-weight: bold;
+      text-align: center;
+      pointer-events: none;
+      text-shadow: 2px 2px 5px #000;
+      z-index: 10;
     }
   </style>
 </head>
 <body>
 
-  <div id="controls">
-    <span id="my-id">Your ID: Generating...</span>
-    <input type="text" id="peer-id-input" placeholder="Enter Friend's ID">
-    <button id="connect-btn">Connect & Play</button>
+  <div id="ui-overlay">
+    <div id="player-lives">Lives: 3</div>
+    <div id="zone-timer">Safe Zone Shrinking...</div>
+    <div id="enemy-lives">Enemy Lives: 3</div>
   </div>
 
-  <div id="status">Status: Waiting to create or join game...</div>
+  <div id="status-overlay">Searching for a match...</div>
 
-  <canvas id="gameCanvas" width="800" height="500"></canvas>
-
-  <div id="instructions">
-    Controls: <b>W, A, S, D</b> to Move | <b>Click</b> to Shoot
-  </div>
+  <canvas id="gameCanvas"></canvas>
 
   <script>
+    // 1. REPLACE WITH YOUR FIREBASE CONFIG
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+      projectId: "YOUR_PROJECT",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_ID",
+      appId: "YOUR_APP_ID"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Canvas setup
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
-    const statusDiv = document.getElementById('status');
-    const myIdSpan = document.getElementById('my-id');
-    const peerIdInput = document.getElementById('peer-id-input');
-    const connectBtn = document.getElementById('connect-btn');
+    const statusOverlay = document.getElementById('status-overlay');
+    const pLivesDiv = document.getElementById('player-lives');
+    const eLivesDiv = document.getElementById('enemy-lives');
 
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    // Game Variables
     let peer = null;
     let conn = null;
     let isHost = false;
+    let roomId = null;
 
-    // Game state
     const keys = {};
     let mousePos = { x: 0, y: 0 };
     let bullets = [];
 
-    const localPlayer = {
-      x: 100,
-      y: 250,
-      radius: 15,
-      color: '#008CBA',
-      speed: 4,
-      lives: 3
+    const localPlayer = { x: 100, y: window.innerHeight / 2, radius: 18, color: '#008CBA', speed: 5, lives: 3 };
+    const remotePlayer = { x: window.innerWidth - 100, y: window.innerHeight / 2, radius: 18, color: '#f44336', lives: 3 };
+
+    // Shrinking Battle Royale Zone
+    const zone = {
+      x: window.innerWidth / 2,
+      y: window.innerHeight / 2,
+      radius: Math.max(window.innerWidth, window.innerHeight),
+      shrinkRate: 0.2,
+      minRadius: 80
     };
 
-    const remotePlayer = {
-      x: 700,
-      y: 250,
-      radius: 15,
-      color: '#f44336',
-      lives: 3
-    };
-
-    // Initialize PeerJS
+    // 2. AUTOMATIC MATCHMAKING SYSTEM
     peer = new Peer();
 
-    peer.on('open', (id) => {
-      myIdSpan.innerText = `Your ID: ${id}`;
-    });
+    peer.on('open', (myPeerId) => {
+      const lobbyRef = db.ref('matchmaking_queue');
 
-    // Handle incoming connections (Player 2 connects to Player 1)
-    peer.on('connection', (connection) => {
-      conn = connection;
-      isHost = true;
-      setupConnection();
-      statusDiv.innerText = "Status: Player 2 Connected! Game Started.";
-    });
+      lobbyRef.once('value', (snapshot) => {
+        const rooms = snapshot.val();
+        let foundRoom = false;
 
-    // Connect button click handler
-    connectBtn.addEventListener('click', () => {
-      const peerId = peerIdInput.value.trim();
-      if (peerId) {
-        conn = peer.connect(peerId);
-        isHost = false;
-        // Swap starting positions if joining
-        localPlayer.x = 700;
-        localPlayer.color = '#f44336';
-        remotePlayer.x = 100;
-        remotePlayer.color = '#008CBA';
-        setupConnection();
-        statusDiv.innerText = "Status: Connecting to host...";
-      }
+        if (rooms) {
+          // Look for an open room created by someone else
+          for (let key in rooms) {
+            if (rooms[key].status === 'waiting') {
+              foundRoom = true;
+              roomId = key;
+              const hostPeerId = rooms[key].hostPeerId;
+
+              // Join existing room
+              conn = peer.connect(hostPeerId);
+              isHost = false;
+              
+              // Swap positions for Guest
+              localPlayer.x = window.innerWidth - 100;
+              localPlayer.color = '#f44336';
+              remotePlayer.x = 100;
+              remotePlayer.color = '#008CBA';
+
+              db.ref(`matchmaking_queue/${roomId}`).update({ status: 'active' });
+              setupConnection();
+              break;
+            }
+          }
+        }
+
+        // If no rooms are waiting, host a new room
+        if (!foundRoom) {
+          isHost = true;
+          const newRoomRef = lobbyRef.push();
+          roomId = newRoomRef.key;
+
+          newRoomRef.set({
+            hostPeerId: myPeerId,
+            status: 'waiting'
+          });
+
+          // Clean up room on disconnect
+          newRoomRef.onDisconnect().remove();
+
+          peer.on('connection', (connection) => {
+            conn = connection;
+            setupConnection();
+            db.ref(`matchmaking_queue/${roomId}`).remove(); // Remove room once full
+          });
+        }
+      });
     });
 
     function setupConnection() {
-      conn.on('open', () => {
-        statusDiv.innerText = "Status: Connected! Fight!";
-      });
+      statusOverlay.innerText = "";
 
       conn.on('data', (data) => {
         if (data.type === 'state') {
@@ -156,135 +182,147 @@
           localPlayer.lives = data.remainingLives;
         }
       });
+
+      conn.on('close', () => {
+        statusOverlay.innerText = "Opponent Left the Game";
+      });
     }
 
-    // Input handlers
+    // 3. INPUT HANDLERS
     window.addEventListener('keydown', (e) => keys[e.key.toLowerCase()] = true);
     window.addEventListener('keyup', (e) => keys[e.key.toLowerCase()] = false);
 
-    canvas.addEventListener('mousemove', (e) => {
-      const rect = canvas.getBoundingClientRect();
-      mousePos.x = e.clientX - rect.left;
-      mousePos.y = e.clientY - rect.top;
+    window.addEventListener('mousemove', (e) => {
+      mousePos.x = e.clientX;
+      mousePos.y = e.clientY;
     });
 
-    canvas.addEventListener('click', () => {
+    window.addEventListener('click', () => {
       if (!conn || localPlayer.lives <= 0 || remotePlayer.lives <= 0) return;
 
       const angle = Math.atan2(mousePos.y - localPlayer.y, mousePos.x - localPlayer.x);
       const bullet = {
         x: localPlayer.x,
         y: localPlayer.y,
-        dx: Math.cos(angle) * 7,
-        dy: Math.sin(angle) * 7,
+        dx: Math.cos(angle) * 9,
+        dy: Math.sin(angle) * 9,
         owner: isHost ? 'host' : 'guest'
       };
 
       bullets.push(bullet);
-
-      // Send bullet event to peer
-      conn.send({
-        type: 'shoot',
-        bullet: bullet
-      });
+      conn.send({ type: 'shoot', bullet: bullet });
     });
 
-    // Main Game Loop
+    // 4. GAME LOOP LOGIC
     function update() {
-      // Movement logic
       if (localPlayer.lives > 0) {
+        // Player Controls
         if (keys['w'] && localPlayer.y - localPlayer.radius > 0) localPlayer.y -= localPlayer.speed;
         if (keys['s'] && localPlayer.y + localPlayer.radius < canvas.height) localPlayer.y += localPlayer.speed;
         if (keys['a'] && localPlayer.x - localPlayer.radius > 0) localPlayer.x -= localPlayer.speed;
         if (keys['d'] && localPlayer.x + localPlayer.radius < canvas.width) localPlayer.x += localPlayer.speed;
 
-        // Send network state update
+        // Shrinking Zone Damage
         if (conn && conn.open) {
+          const distFromCenter = Math.hypot(localPlayer.x - zone.x, localPlayer.y - zone.y);
+          if (distFromCenter > zone.radius) {
+            localPlayer.lives -= 0.005; // Take passive zone damage over time
+          }
+
+          // Send updates to peer
           conn.send({
             type: 'state',
             x: localPlayer.x,
             y: localPlayer.y,
-            lives: localPlayer.lives
+            lives: Math.ceil(localPlayer.lives)
           });
         }
       }
 
-      // Update bullets
+      // Zone Shrinking
+      if (conn && conn.open && zone.radius > zone.minRadius) {
+        zone.radius -= zone.shrinkRate;
+      }
+
+      // Bullets Update & Hit Detection
       for (let i = bullets.length - 1; i >= 0; i--) {
         const b = bullets[i];
         b.x += b.dx;
         b.y += b.dy;
 
-        // Check collision with remote player (Host checks hits on Guest, Guest checks hits on Host)
-        const myBullet = (isHost && b.owner === 'host') || (!isHost && b.owner === 'guest');
-        if (myBullet) {
+        const isMyBullet = (isHost && b.owner === 'host') || (!isHost && b.owner === 'guest');
+        if (isMyBullet && remotePlayer.lives > 0) {
           const dist = Math.hypot(b.x - remotePlayer.x, b.y - remotePlayer.y);
           if (dist < remotePlayer.radius) {
             bullets.splice(i, 1);
             remotePlayer.lives--;
-            conn.send({
-              type: 'hit',
-              remainingLives: remotePlayer.lives
-            });
+            conn.send({ type: 'hit', remainingLives: remotePlayer.lives });
             continue;
           }
         }
 
-        // Remove off-screen bullets
         if (b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height) {
           bullets.splice(i, 1);
         }
       }
+
+      // UI Displays
+      pLivesDiv.innerText = `Your Lives: ${Math.max(0, Math.ceil(localPlayer.lives))}`;
+      pLivesDiv.style.color = localPlayer.color;
+
+      eLivesDiv.innerText = `Enemy Lives: ${Math.max(0, Math.ceil(remotePlayer.lives))}`;
+      eLivesDiv.style.color = remotePlayer.color;
+
+      if (localPlayer.lives <= 0) {
+        statusOverlay.innerText = "YOU ELIMINATED!";
+        statusOverlay.style.color = "#ff4444";
+      } else if (remotePlayer.lives <= 0) {
+        statusOverlay.innerText = "VICTORY ROYALE!";
+        statusOverlay.style.color = "#44ff44";
+      }
     }
 
+    // 5. RENDERING
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw local player
+      // Draw Battle Royale Danger Zone
+      ctx.fillStyle = 'rgba(255, 0, 0, 0.15)';
+      ctx.beginPath();
+      ctx.rect(0, 0, canvas.width, canvas.height);
+      ctx.arc(zone.x, zone.y, Math.max(0, zone.radius), 0, Math.PI * 2, true);
+      ctx.fill();
+
+      // Safe Zone Outline
+      ctx.strokeStyle = '#55ff55';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(zone.x, zone.y, Math.max(0, zone.radius), 0, Math.PI * 2);
+      ctx.stroke();
+
+      // Local Player
       if (localPlayer.lives > 0) {
         ctx.beginPath();
         ctx.arc(localPlayer.x, localPlayer.y, localPlayer.radius, 0, Math.PI * 2);
         ctx.fillStyle = localPlayer.color;
         ctx.fill();
-        ctx.closePath();
       }
 
-      // Draw remote player
+      // Enemy Player
       if (remotePlayer.lives > 0) {
         ctx.beginPath();
         ctx.arc(remotePlayer.x, remotePlayer.y, remotePlayer.radius, 0, Math.PI * 2);
         ctx.fillStyle = remotePlayer.color;
         ctx.fill();
-        ctx.closePath();
       }
 
-      // Draw bullets
+      // Bullets
       ctx.fillStyle = '#fff';
       bullets.forEach(b => {
         ctx.beginPath();
-        ctx.arc(b.x, b.y, 4, 0, Math.PI * 2);
+        ctx.arc(b.x, b.y, 5, 0, Math.PI * 2);
         ctx.fill();
-        ctx.closePath();
       });
-
-      // Draw UI (Lives)
-      ctx.font = '16px Arial';
-      ctx.fillStyle = localPlayer.color;
-      ctx.fillText(`Your Lives: ${Math.max(0, localPlayer.lives)}`, 20, 30);
-
-      ctx.fillStyle = remotePlayer.color;
-      ctx.fillText(`Enemy Lives: ${Math.max(0, remotePlayer.lives)}`, canvas.width - 140, 30);
-
-      // Win/Loss message
-      if (localPlayer.lives <= 0) {
-        ctx.fillStyle = '#ff4444';
-        ctx.font = '40px Arial';
-        ctx.fillText('YOU LOST!', canvas.width / 2 - 100, canvas.height / 2);
-      } else if (remotePlayer.lives <= 0) {
-        ctx.fillStyle = '#44ff44';
-        ctx.font = '40px Arial';
-        ctx.fillText('YOU WIN!', canvas.width / 2 - 90, canvas.height / 2);
-      }
     }
 
     function gameLoop() {
