@@ -2,25 +2,46 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>My HTML Game</title>
+    <title>Retro Clicker Game</title>
+    <style>
+        body { background: #121214; color: #ffffff; font-family: system-ui, sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .card { background: #1e1e24; padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; width: 320px; border: 1px solid #2e2e38; }
+        h1 { color: #ffca28; margin: 0 0 20px; font-size: 26px; text-transform: uppercase; letter-spacing: 1px; }
+        h3 { margin-top: 0; color: #a0a0b0; }
+        input { width: 90%; padding: 12px; margin: 8px 0; border: 1px solid #3e3e4a; background: #121214; color: #fff; border-radius: 8px; font-size: 14px; }
+        input:focus { border-color: #ffca28; outline: none; }
+        button { width: 100%; padding: 12px; margin: 8px 0; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; transition: 0.2s ease-in-out; }
+        #loginBtn { background: #ffca28; color: #121214; }
+        #loginBtn:hover { background: #ffe082; transform: translateY(-2px); }
+        #registerBtn { background: transparent; border: 2px solid #ffca28; color: #ffca28; }
+        #registerBtn:hover { background: rgba(255, 202, 40, 0.1); }
+        #scoreBtn { background: #4caf50; color: #fff; font-size: 20px; padding: 25px; margin: 20px 0; border-radius: 12px; box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4); }
+        #scoreBtn:hover { background: #66bb6a; transform: scale(1.05); }
+        #scoreBtn:active { transform: scale(0.95); }
+        #logoutBtn { background: #f44336; color: #fff; }
+        #logoutBtn:hover { background: #e57373; }
+        .score-display { font-size: 32px; font-weight: bold; color: #ffca28; margin: 15px 0; }
+    </style>
 </head>
 <body>
-    <h1>My Awesome Game</h1>
+    <div class="card">
+        <h1>Pixel Clicker</h1>
 
-    <!-- Auth UI -->
-    <div id="auth-section">
-        <h3>Login or Register</h3>
-        <input id="email" type="email" placeholder="Email"><br><br>
-        <input id="password" type="password" placeholder="Password"><br><br>
-        <button id="loginBtn">Login</button>
-        <button id="registerBtn">Register</button>
-    </div>
+        <!-- Auth UI -->
+        <div id="auth-section">
+            <h3>Login or Register</h3>
+            <input id="email" type="email" placeholder="Email">
+            <input id="password" type="password" placeholder="Password">
+            <button id="loginBtn">Login</button>
+            <button id="registerBtn">Register</button>
+        </div>
 
-    <!-- Game UI (Hidden until logged in) -->
-    <div id="game-section" style="display:none;">
-        <button id="scoreBtn">Score! (+10 pts)</button>
-        <p>Current Score: <span id="scoreVal">0</span></p>
-        <button id="logoutBtn">Logout</button>
+        <!-- Game UI -->
+        <div id="game-section" style="display:none;">
+            <div class="score-display"><span id="scoreVal">0</span> pts</div>
+            <button id="scoreBtn">CLICK ME!</button>
+            <button id="logoutBtn">Logout</button>
+        </div>
     </div>
 
     <script type="importmap">
