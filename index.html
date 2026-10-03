@@ -383,27 +383,31 @@
             </h2>
             <button class="closeScreenBtn text-slate-400 hover:text-white text-2xl"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <div class="flex-1 flex flex-col items-center justify-center max-w-xl mx-auto w-full">
-            <div class="glass-panel p-6 rounded-2xl w-full border border-amber-500/30 text-center">
-                <i class="fa-solid fa-fire-burner text-5xl text-amber-500 mb-4"></i>
-                <h3 class="font-orbitron font-bold text-lg mb-2">FUSE ITEM XP</h3>
-                <p class="text-xs text-slate-400 mb-4">Choose two compatible items to merge XP. A level 1 Common fused with a level 2 Common becomes a level 2 Common with partial transferred XP.</p>
-
-                <div class="grid grid-cols-2 gap-3 mb-4">
+        <div class="flex-1 flex flex-col max-w-6xl mx-auto w-full mt-4 overflow-hidden">
+            <div class="glass-panel p-4 rounded-2xl border border-amber-500/30 mb-4">
+                <div class="flex items-center justify-between mb-3">
                     <div>
-                        <label class="block text-[10px] uppercase tracking-widest text-slate-400 font-mono mb-1">ITEM A</label>
-                        <select id="forgeSelectA" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white outline-none text-sm"></select>
+                        <h3 class="font-orbitron font-bold text-lg mb-1 text-amber-400">FUSE ITEM XP</h3>
+                        <p class="text-[10px] text-slate-400">Click a weapon to target it, then multi-select items to merge into it. Any weapon can boost any weapon.</p>
                     </div>
-                    <div>
-                        <label class="block text-[10px] uppercase tracking-widest text-slate-400 font-mono mb-1">ITEM B</label>
-                        <select id="forgeSelectB" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white outline-none text-sm"></select>
+                    <button id="btnForgeUpgrade" class="btn-neon px-4 py-2 rounded-xl font-orbitron font-bold text-amber-300">FUSE SELECTED</button>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-left">
+                    <div class="glass-panel p-3 rounded-xl bg-slate-900/40">
+                        <div class="text-[10px] uppercase font-mono text-slate-400 mb-2">TARGET ITEM</div>
+                        <div id="forgeTargetSummary" class="text-xs text-slate-300">None selected</div>
+                    </div>
+                    <div class="glass-panel p-3 rounded-xl bg-slate-900/40">
+                        <div class="text-[10px] uppercase font-mono text-slate-400 mb-2">SELECTED BOOSTS</div>
+                        <div id="forgeSelectionSummary" class="text-xs text-slate-300">No boosts selected</div>
+                    </div>
+                    <div class="glass-panel p-3 rounded-xl bg-slate-900/40">
+                        <div class="text-[10px] uppercase font-mono text-slate-400 mb-2">PROJECTED RESULT</div>
+                        <div id="forgeProjectedSummary" class="text-xs text-slate-300">Need target + boosts</div>
                     </div>
                 </div>
-
-                <button id="btnForgeUpgrade" class="btn-neon w-full py-3 rounded-xl font-orbitron font-bold text-amber-400">
-                    FUSE ITEMS
-                </button>
             </div>
+            <div id="forgeInventory" class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-3 overflow-y-auto pr-1 flex-1"></div>
         </div>
     </div>
 
@@ -420,12 +424,13 @@
                 <ul class="space-y-1 text-xs list-disc list-inside text-slate-400">
                     <li><strong class="text-white">A / D or Left / Right Arrows:</strong> Move Left and Right</li>
                     <li><strong class="text-white">W / Space / Up Arrow:</strong> Jump</li>
-                    <li><strong class="text-white">J / Left Click:</strong> Attack with equipped weapon</li>
+                    <li><strong class="text-white">1 / 2 / 3:</strong> Switch between equipped weapons</li>
+                    <li><strong class="text-white">Mouse Click:</strong> Fires the selected weapon</li>
                 </ul>
             </div>
             <div class="glass-panel p-4 rounded-xl">
                 <h4 class="font-orbitron font-bold text-cyan-300 mb-2">WORKSHOP & MARKET MECHANICS</h4>
-                <p class="text-xs text-slate-400">Equip weapons, torsos, and modules to boost battle power. Fusion items in the Forge to transfer XP and level them up. Battle stages are selected before combat begins.</p>
+                <p class="text-xs text-slate-400">Equip weapons, torsos, and modules to boost battle power. Fusion items in the Forge to transfer XP and level them up. Battle stages are selected before combat and reward 500 coins for clear.</p>
             </div>
         </div>
     </div>
@@ -461,6 +466,7 @@
                     <div class="w-32 bg-slate-800 h-3 rounded-full overflow-hidden mt-1">
                         <div id="healthBar" class="bg-emerald-400 h-full w-full transition-all duration-200"></div>
                     </div>
+                    <div id="healthText" class="text-[10px] font-mono text-slate-300 mt-1">100/100</div>
                 </div>
                 <div>
                     <div class="text-[10px] text-slate-400 uppercase font-mono">COINS</div>
@@ -500,14 +506,14 @@
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
         const firebaseConfig = {
-          apiKey: "AIzaSyBvEpZvKbiFxnr1aDqzIu1vSRhHmMUhEyc",
-          authDomain: "my-game-database-e99d8.firebaseapp.com",
-          databaseURL: "https://my-game-database-e99d8-default-rtdb.firebaseio.com",
-          projectId: "my-game-database-e99d8",
-          storageBucket: "my-game-database-e99d8.firebasestorage.app",
-          messagingSenderId: "345507093937",
-          appId: "1:345507093937:web:04cc2840f1553674b63190",
-          measurementId: "G-FTCD4QBWWF"
+            apiKey: "AIzaSyBvEpZvKbiFxnr1aDqzIu1vSRhHmMUhEyc",
+            authDomain: "my-game-database-e99d8.firebaseapp.com",
+            databaseURL: "https://my-game-database-e99d8-default-rtdb.firebaseio.com",
+            projectId: "my-game-database-e99d8",
+            storageBucket: "my-game-database-e99d8.firebasestorage.app",
+            messagingSenderId: "345507093937",
+            appId: "1:345507093937:web:04cc2840f1553674b63190",
+            measurementId: "G-FTCD4QBWWF"
         };
 
         let firebaseConnected = false;
@@ -543,32 +549,45 @@
         }
 
         function getLevelThreshold(item) {
-            const rarity = getRarityInfo(item.rarity || 'Common');
             const level = Number(item.level || 1);
             const base = 1000 + ((level - 1) * 200);
-            if (item.rarity === 'Common') return Math.round(base * 1.0);
-            if (item.rarity === 'Rare') return Math.round(base * 1.12);
-            if (item.rarity === 'Epic') return Math.round(base * 1.2);
-            if (item.rarity === 'Legendary') return Math.round(base * 1.35);
-            if (item.rarity === 'Mythic') return Math.round(base * 1.55);
-            if (item.rarity === 'Divine') return Math.round(base * 1.8);
+            if ((item.rarity || 'Common') === 'Common') return Math.round(base * 1.0);
+            if ((item.rarity || 'Common') === 'Rare') return Math.round(base * 1.12);
+            if ((item.rarity || 'Common') === 'Epic') return Math.round(base * 1.2);
+            if ((item.rarity || 'Common') === 'Legendary') return Math.round(base * 1.35);
+            if ((item.rarity || 'Common') === 'Mythic') return Math.round(base * 1.55);
+            if ((item.rarity || 'Common') === 'Divine') return Math.round(base * 1.8);
             return Math.round(base * 2.1);
+        }
+
+        function clamp(value, min, max) {
+            return Math.min(max, Math.max(min, value));
         }
 
         function normalizeItem(item) {
             if (!item) return null;
             const baseRarity = item.rarity || 'Common';
-            const baseLevel = Number(item.level || 1);
-            const baseXp = Number(item.xp || 0);
+            const baseLevel = Math.max(1, Number(item.level || 1));
+            const baseXp = Math.max(0, Number(item.xp || 0));
+            const category = item.category || item.type || 'weapon';
             const normalized = {
                 ...item,
                 rarity: baseRarity,
                 level: Math.max(1, baseLevel),
-                xp: Math.max(0, baseXp),
-                power: Number(item.power || 10),
-                tags: Array.isArray(item.tags) ? item.tags : [item.category || 'weapon'],
-                category: item.category || item.type || 'weapon',
-                attackType: item.attackType || 'slice'
+                xp: baseXp,
+                power: Number(item.power || item.damage || 10),
+                damage: Number(item.damage || item.power || 10),
+                attackSpeed: Number(item.attackSpeed || 0.8),
+                attackTime: Number(item.attackTime || item.attackSpeed || 0.8),
+                health: Number(item.health || 0),
+                speed: Number(item.speed || 0),
+                damageBoostPct: Number(item.damageBoostPct || 0),
+                healthBoostPct: Number(item.healthBoostPct || 0),
+                xpBoost: Number(item.xpBoost || 0),
+                tags: Array.isArray(item.tags) ? item.tags : [category],
+                category,
+                type: item.type || (category === 'weapon' ? 'Weapon 1' : category === 'torso' ? 'Torso' : 'Module 1'),
+                attackType: item.attackType || (category === 'weapon' ? 'gravity' : 'none')
             };
 
             while (normalized.xp >= getLevelThreshold(normalized)) {
@@ -586,13 +605,68 @@
                     }
                 }
             }
+
+            if (normalized.category === 'module') {
+                normalized.damageBoostPct = normalizeItemStatValue(normalized.damageBoostPct, 0.05);
+                normalized.healthBoostPct = normalizeItemStatValue(normalized.healthBoostPct, 0.05);
+            }
+            if (normalized.category === 'torso') {
+                normalized.health = Math.max(20, normalized.health || 100);
+                normalized.speed = Math.max(0, normalized.speed || 0.05);
+            }
+            if (normalized.category === 'weapon') {
+                normalized.attackTime = clamp(normalized.attackTime, 0.2, 2.5);
+                normalized.attackSpeed = normalized.attackTime;
+                normalized.damage = Math.max(5, normalized.damage || 10);
+            }
             return normalized;
+        }
+
+        function normalizeItemStatValue(value, fallback) {
+            const parsed = Number(value ?? fallback);
+            return Number.isFinite(parsed) ? parsed : fallback;
+        }
+
+        function buildWeapon(name, rarity, level, damage, attackTime, attackType) {
+            const safeRarity = rarity || 'Common';
+            return normalizeItem({
+                id: 'weapon_' + Date.now() + '_' + Math.random().toString(16).slice(2, 8),
+                name,
+                category: 'weapon',
+                type: 'Weapon 1',
+                rarity: safeRarity,
+                level: level || 1,
+                xp: 0,
+                damage,
+                power: damage,
+                attackTime,
+                attackSpeed: attackTime,
+                attackType: attackType || 'gravity',
+                tags: ['weapon', attackType || 'gravity', 'tech'],
+                health: 0,
+                speed: 0
+            });
+        }
+
+        function getStatText(item) {
+            if (!item) return 'Empty';
+            const normalized = normalizeItem(item);
+            if (normalized.category === 'weapon') {
+                return `DMG ${Math.round(normalized.damage)} • ATK ${normalized.attackTime.toFixed(2)}s`;
+            }
+            if (normalized.category === 'torso') {
+                return `HP +${Math.round(normalized.health)} • SPD +${(normalized.speed * 100).toFixed(0)}%`;
+            }
+            if (normalized.category === 'module') {
+                return `DMG +${(normalized.damageBoostPct * 100).toFixed(0)}% • HP +${(normalized.healthBoostPct * 100).toFixed(0)}%`;
+            }
+            return 'Item';
         }
 
         function applyXpToItem(item, xpGain) {
             if (!item) return null;
             const safeItem = normalizeItem(item);
-            safeItem.xp += Math.max(0, xpGain || 0);
+            safeItem.xp += Math.max(0, Number(xpGain || 0));
             while (safeItem.xp >= getLevelThreshold(safeItem)) {
                 safeItem.xp -= getLevelThreshold(safeItem);
                 safeItem.level += 1;
@@ -611,24 +685,6 @@
             return safeItem;
         }
 
-        function createRandomWeapon(baseName, category, tags) {
-            const rarity = rarityOrder[Math.floor(Math.random() * 3)];
-            const level = 1 + Math.floor(Math.random() * 3);
-            const attackTypes = ['slice', 'shoot', 'throw'];
-            return normalizeItem({
-                id: `item_${Date.now()}_${Math.random().toString(16).slice(2, 7)}`,
-                name: `${baseName} ${rarity.name}`,
-                category: category,
-                type: category === 'weapon' ? 'Weapon 1' : category === 'torso' ? 'Torso' : 'Module 1',
-                rarity: rarity.name,
-                level,
-                xp: 0,
-                power: 12 + Math.random() * 18,
-                tags: tags || [category, attackTypes[Math.floor(Math.random() * attackTypes.length)], 'tech'],
-                attackType: attackTypes[Math.floor(Math.random() * attackTypes.length)]
-            });
-        }
-
         let currentUser = null;
         let isOfflineGuest = false;
 
@@ -637,11 +693,21 @@
             email: 'offline@guest.com',
             balance: 500,
             inventory: [
-                normalizeItem({ id: 'init_1', name: 'Nova Blade', category: 'weapon', type: 'Weapon 1', rarity: 'Common', level: 1, xp: 0, power: 15, tags: ['weapon','slice','energy'], attackType: 'slice' }),
-                normalizeItem({ id: 'init_2', name: 'Aegis Plate', category: 'torso', type: 'Torso', rarity: 'Common', level: 1, xp: 0, power: 12, tags: ['torso','guard','steel'] }),
-                normalizeItem({ id: 'init_3', name: 'Pulse Core', category: 'module', type: 'Module 1', rarity: 'Common', level: 1, xp: 0, power: 9, tags: ['module','shield','tech'] }),
-                normalizeItem({ id: 'init_4', name: 'Plasma Rifle', category: 'weapon', type: 'Weapon 2', rarity: 'Common', level: 1, xp: 0, power: 17, tags: ['weapon','shoot','energy'], attackType: 'shoot' }),
-                normalizeItem({ id: 'init_5', name: 'Flux Talisman', category: 'module', type: 'Module 2', rarity: 'Common', level: 1, xp: 0, power: 11, tags: ['module','boost','arcane'] })
+                buildWeapon('Nova Blade', 'Common', 1, 18, 0.65, 'slash'),
+                buildWeapon('Pulse Rifle', 'Common', 1, 22, 0.85, 'straight'),
+                buildWeapon('Gravity Cannon', 'Common', 1, 28, 1.05, 'gravity'),
+                normalizeItem({
+                    id: 'torso_1', name: 'Aegis Plate', category: 'torso', type: 'Torso', rarity: 'Common', level: 1,
+                    xp: 0, health: 100, speed: 0.05, tags: ['torso', 'guard', 'steel']
+                }),
+                normalizeItem({
+                    id: 'module_1', name: 'Pulse Core', category: 'module', type: 'Module 1', rarity: 'Common', level: 1,
+                    xp: 0, damageBoostPct: 0.05, healthBoostPct: 0.05, tags: ['module', 'boost', 'tech']
+                }),
+                normalizeItem({
+                    id: 'module_2', name: 'Flux Talisman', category: 'module', type: 'Module 2', rarity: 'Common', level: 1,
+                    xp: 0, damageBoostPct: 0.08, healthBoostPct: 0.04, tags: ['module', 'boost', 'arcane']
+                })
             ],
             equipped: {
                 'Weapon 1': null,
@@ -662,8 +728,8 @@
                     const osc = this.ctx.createOscillator();
                     const gain = this.ctx.createGain();
                     osc.type = 'sine';
-                    osc.frequency.setValueAtTime(400, this.ctx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.05);
+                    osc.frequency.setValueAtTime(420, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(780, this.ctx.currentTime + 0.05);
                     gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
                     osc.connect(gain); gain.connect(this.ctx.destination);
@@ -676,15 +742,16 @@
                     const osc = this.ctx.createOscillator();
                     const gain = this.ctx.createGain();
                     osc.type = 'sawtooth';
-                    osc.frequency.setValueAtTime(150, this.ctx.currentTime);
-                    osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.1);
-                    gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+                    osc.frequency.setValueAtTime(180, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.08);
+                    gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.08);
                     osc.connect(gain); gain.connect(this.ctx.destination);
-                    osc.start(); osc.stop(this.ctx.currentTime + 0.1);
+                    osc.start(); osc.stop(this.ctx.currentTime + 0.08);
                 } catch (e) {}
             }
         }
+
         const sfx = new SoundEffects();
 
         const authScreen = document.getElementById('authScreen');
@@ -756,13 +823,16 @@
                     showStatus("Creating account...", false);
                     const userCred = await createUserWithEmailAndPassword(auth, email, password);
                     const initialProfile = {
-                        username: username,
-                        email: email,
+                        username,
+                        email,
                         balance: 500,
                         inventory: [
-                            normalizeItem({ id: 'init_1', name: 'Nova Blade', category: 'weapon', type: 'Weapon 1', rarity: 'Common', level: 1, xp: 0, power: 15, tags: ['weapon','slice','energy'], attackType: 'slice' }),
-                            normalizeItem({ id: 'init_2', name: 'Aegis Plate', category: 'torso', type: 'Torso', rarity: 'Common', level: 1, xp: 0, power: 12, tags: ['torso','guard','steel'] }),
-                            normalizeItem({ id: 'init_3', name: 'Pulse Core', category: 'module', type: 'Module 1', rarity: 'Common', level: 1, xp: 0, power: 9, tags: ['module','shield','tech'] })
+                            buildWeapon('Nova Blade', 'Common', 1, 18, 0.65, 'slash'),
+                            buildWeapon('Pulse Rifle', 'Common', 1, 22, 0.85, 'straight'),
+                            buildWeapon('Gravity Cannon', 'Common', 1, 28, 1.05, 'gravity'),
+                            normalizeItem({ id: 'torso_1', name: 'Aegis Plate', category: 'torso', type: 'Torso', rarity: 'Common', level: 1, xp: 0, health: 100, speed: 0.05, tags: ['torso', 'guard', 'steel'] }),
+                            normalizeItem({ id: 'module_1', name: 'Pulse Core', category: 'module', type: 'Module 1', rarity: 'Common', level: 1, xp: 0, damageBoostPct: 0.05, healthBoostPct: 0.05, tags: ['module', 'boost', 'tech'] }),
+                            normalizeItem({ id: 'module_2', name: 'Flux Talisman', category: 'module', type: 'Module 2', rarity: 'Common', level: 1, xp: 0, damageBoostPct: 0.08, healthBoostPct: 0.04, tags: ['module', 'boost', 'arcane'] })
                         ],
                         equipped: {
                             'Weapon 1': null,
@@ -879,7 +949,7 @@
 
         document.getElementById('btnWorkshop').addEventListener('click', () => { sfx.playClick(); closeAllScreens(); screens.workshop.classList.remove('hidden'); });
         document.getElementById('btnStore').addEventListener('click', () => { sfx.playClick(); closeAllScreens(); screens.store.classList.remove('hidden'); });
-        document.getElementById('btnBlacksmith').addEventListener('click', () => { sfx.playClick(); closeAllScreens(); screens.blacksmith.classList.remove('hidden'); });
+        document.getElementById('btnBlacksmith').addEventListener('click', () => { sfx.playClick(); closeAllScreens(); screens.blacksmith.classList.remove('hidden'); renderForgeInventory(); });
         document.getElementById('btnHowToPlay').addEventListener('click', () => { sfx.playClick(); closeAllScreens(); screens.howToPlay.classList.remove('hidden'); });
         document.getElementById('btnAccount').addEventListener('click', () => { sfx.playClick(); closeAllScreens(); screens.account.classList.remove('hidden'); });
 
@@ -895,10 +965,39 @@
             let total = 0;
             if (playerProfile.equipped) {
                 Object.values(playerProfile.equipped).forEach(item => {
-                    if (item) total += Number(item.power || 0);
+                    if (item) total += Number(item.power || item.damage || 0);
                 });
             }
             return total;
+        }
+
+        function getInventoryItemById(id) {
+            return (playerProfile.inventory || []).find(item => item && item.id === id) || null;
+        }
+
+        function getEquippedItemCountByCategory(category) {
+            const items = Object.values(playerProfile.equipped || {})
+                .filter(Boolean)
+                .filter(item => item.category === category);
+            return items.length;
+        }
+
+        function getTargetSlotForInventoryItem(item) {
+            if (!item) return null;
+            const normalized = normalizeItem(item);
+            if (normalized.category === 'weapon') {
+                if (!playerProfile.equipped['Weapon 1']) return 'Weapon 1';
+                if (!playerProfile.equipped['Weapon 2']) return 'Weapon 2';
+                if (!playerProfile.equipped['Weapon 3']) return 'Weapon 3';
+                return 'Weapon 1';
+            }
+            if (normalized.category === 'torso') return 'Torso';
+            if (normalized.category === 'module') {
+                if (!playerProfile.equipped['Module 1']) return 'Module 1';
+                if (!playerProfile.equipped['Module 2']) return 'Module 2';
+                return 'Module 1';
+            }
+            return null;
         }
 
         function updateUI() {
@@ -914,11 +1013,12 @@
                 const item = playerProfile.equipped ? playerProfile.equipped[type] : null;
                 const contentEl = slotEl.querySelector('.slot-content');
                 if (item) {
+                    const normalized = normalizeItem(item);
                     slotEl.classList.add('filled');
                     contentEl.innerHTML = `
-                        <div class="font-bold text-white text-[10px] truncate">${item.name}</div>
-                        <div class="text-[9px] text-cyan-300">${item.rarity} L${item.level}</div>
-                        <div class="text-[9px] text-slate-300">+${item.power} Power</div>
+                        <div class="font-bold text-white text-[10px] truncate">${normalized.name}</div>
+                        <div class="text-[9px] text-cyan-300">${normalized.rarity} L${normalized.level}</div>
+                        <div class="text-[9px] text-slate-300">${getStatText(normalized)}</div>
                         <button class="unequipBtn text-[9px] text-rose-400 mt-1 hover:underline" data-type="${type}">Unequip</button>
                     `;
                 } else {
@@ -955,7 +1055,7 @@
                         <div class="mt-1 flex flex-wrap gap-1">
                             ${(normalized.tags || []).slice(0, 3).map(tag => `<span class="tag-badge">${tag}</span>`).join('')}
                         </div>
-                        <div class="stat-line mt-2">Lvl ${normalized.level} • +${normalized.power} Power</div>
+                        <div class="stat-line mt-2">Lvl ${normalized.level} • ${getStatText(normalized)}</div>
                         <div class="stat-line">XP ${normalized.xp}/${getLevelThreshold(normalized)}</div>
                     </div>
                     <button class="equipBtn w-full mt-2 py-1 bg-cyan-950 hover:bg-cyan-900 border border-cyan-500/40 text-cyan-300 rounded font-orbitron text-[10px]" data-idx="${idx}">
@@ -971,312 +1071,933 @@
                     const item = playerProfile.inventory[idx];
                     if (!item) return;
                     const normalized = normalizeItem(item);
-                    const targetSlot = normalized.type === 'Torso' ? 'Torso' : normalized.category === 'module' ? (playerProfile.equipped['Module 1'] ? 'Module 2' : 'Module 1') : (playerProfile.equipped['Weapon 1'] ? (playerProfile.equipped['Weapon 2'] ? 'Weapon 3' : 'Weapon 2') : 'Weapon 1');
-                    if (normalized.category === 'weapon') {
-                        if (!['Weapon 1', 'Weapon 2', 'Weapon 3'].includes(targetSlot)) return;
-                    }
-                    if (normalized.category === 'torso') {
-                        if (targetSlot !== 'Torso') return;
-                    }
-                    if (normalized.category === 'module') {
-                        if (!['Module 1', 'Module 2'].includes(targetSlot)) return;
-                    }
+                    const targetSlot = getTargetSlotForInventoryItem(normalized);
+                    if (!targetSlot) return;
+
                     if (playerProfile.equipped[targetSlot]) {
                         playerProfile.inventory.push(normalizeItem(playerProfile.equipped[targetSlot]));
                     }
-                    playerProfile.equipped[targetSlot] = normalized;
+                    playerProfile.equipped[targetSlot] = normalizeItem(normalized);
                     playerProfile.inventory.splice(idx, 1);
                     saveProfile();
                 };
             });
 
             const listItemSelect = document.getElementById('listItemSelect');
-            const forgeSelectA = document.getElementById('forgeSelectA');
-            const forgeSelectB = document.getElementById('forgeSelectB');
-            listItemSelect.innerHTML = '';
-            forgeSelectA.innerHTML = '';
-            forgeSelectB.innerHTML = '';
-            (playerProfile.inventory || []).forEach((item, idx) => {
-                const normalized = normalizeItem(item);
-                listItemSelect.innerHTML += `<option value="${idx}">${normalized.name} (${normalized.rarity} L${normalized.level})</option>`;
-                forgeSelectA.innerHTML += `<option value="${idx}">${normalized.name} (${normalized.rarity} L${normalized.level})</option>`;
-                forgeSelectB.innerHTML += `<option value="${idx}">${normalized.name} (${normalized.rarity} L${normalized.level})</option>`;
-            });
-        }
-
-        const tabMarket = document.getElementById('tabMarket');
-        const tabChest = document.getElementById('tabChest');
-        const marketView = document.getElementById('marketView');
-        const chestView = document.getElementById('chestView');
-
-        tabMarket.addEventListener('click', () => {
-            tabMarket.className = "px-4 py-2 rounded-lg font-orbitron font-bold text-sm bg-cyan-950 text-cyan-300 border border-cyan-500/40";
-            tabChest.className = "px-4 py-2 rounded-lg font-orbitron font-bold text-sm bg-slate-900 text-slate-400 border border-slate-800";
-            marketView.classList.remove('hidden');
-            chestView.classList.add('hidden');
-        });
-
-        tabChest.addEventListener('click', () => {
-            tabChest.className = "px-4 py-2 rounded-lg font-orbitron font-bold text-sm bg-cyan-950 text-cyan-300 border border-cyan-500/40";
-            tabMarket.className = "px-4 py-2 rounded-lg font-orbitron font-bold text-sm bg-slate-900 text-slate-400 border border-slate-800";
-            chestView.classList.remove('hidden');
-            marketView.classList.add('hidden');
-        });
-
-        const listItemModal = document.getElementById('listItemModal');
-        document.getElementById('btnListItem').addEventListener('click', () => listItemModal.classList.remove('hidden'));
-        document.getElementById('cancelListBtn').addEventListener('click', () => listItemModal.classList.add('hidden'));
-
-        document.getElementById('confirmListBtn').addEventListener('click', async () => {
-            const idx = parseInt(document.getElementById('listItemSelect').value, 10);
-            const price = parseInt(document.getElementById('listItemPrice').value, 10);
-            if (isNaN(idx) || !playerProfile.inventory || playerProfile.inventory.length === 0) {
-                showToast('No item selected.', 'warn');
-                return;
-            }
-
-            const itemToList = normalizeItem(playerProfile.inventory[idx]);
-            if (!itemToList) return;
-            playerProfile.inventory.splice(idx, 1);
-            saveProfile();
-
-            if (firebaseConnected && currentUser && !isOfflineGuest) {
-                const newListingRef = push(ref(db, 'market'));
-                await set(newListingRef, {
-                    listingId: newListingRef.key,
-                    sellerId: currentUser.uid,
-                    sellerName: playerProfile.username,
-                    itemName: itemToList.name,
-                    item: itemToList,
-                    price: price
+            if (listItemSelect) {
+                listItemSelect.innerHTML = '';
+                (playerProfile.inventory || []).forEach((item, idx) => {
+                    const normalized = normalizeItem(item);
+                    const option = document.createElement('option');
+                    option.value = idx;
+                    option.textContent = `${normalized.name} (${normalized.rarity})`;
+                    listItemSelect.appendChild(option);
                 });
             }
-            listItemModal.classList.add('hidden');
-            showToast('Item listed on market.', 'success');
+
+            renderForgeInventory();
+        }
+
+        function refreshBattleHotbar() {
+            let hotbar = document.getElementById('battleHotbar');
+            if (!hotbar) {
+                hotbar = document.createElement('div');
+                hotbar.id = 'battleHotbar';
+                hotbar.style.position = 'absolute';
+                hotbar.style.right = '18px';
+                hotbar.style.top = '18px';
+                hotbar.style.zIndex = '40';
+                hotbar.style.display = 'flex';
+                hotbar.style.gap = '8px';
+                hotbar.style.pointerEvents = 'auto';
+                hotbar.style.padding = '12px';
+                hotbar.style.borderRadius = '14px';
+                hotbar.style.background = 'rgba(15,23,42,0.75)';
+                hotbar.style.border = '1px solid rgba(34,211,238,0.35)';
+                hotbar.style.boxShadow = '0 10px 30px rgba(0,0,0,0.35)';
+                document.body.appendChild(hotbar);
+            }
+
+            const selectedSlot = battleState.selectedSlot || 1;
+            const weaponSlots = [1, 2, 3];
+            hotbar.innerHTML = weaponSlots.map(slot => {
+                const item = playerProfile.equipped[`Weapon ${slot}`];
+                const active = selectedSlot === slot;
+                const name = item ? item.name : 'Empty';
+                const accent = item ? getRarityInfo(item.rarity).color : '#475569';
+                return `
+                    <div data-slot="${slot}" class="battle-slot" style="width:64px;height:64px;border-radius:12px;padding:6px;display:flex;align-items:center;justify-content:center;flex-direction:column;border:1px solid ${active ? '#67e8f9' : 'rgba(148,163,184,0.35)'};background:${active ? 'rgba(34,211,238,0.12)' : 'rgba(15,23,42,0.7)'};color:#fff;font-family:Orbitron,sans-serif;box-shadow:${active ? '0 0 16px rgba(103,232,249,0.35)' : 'none'};">
+                        <div style="font-size:10px;color:${active ? '#67e8f9' : '#cbd5e1'};font-weight:700;letter-spacing:1px;">${slot}</div>
+                        <div style="font-size:9px;max-width:52px;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:${accent};text-align:center;">${name}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function setSelectedWeaponSlot(slot) {
+            battleState.selectedSlot = slot;
+            refreshBattleHotbar();
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (battleState.active) {
+                const key = event.key;
+                if (key === '1' || key === '2' || key === '3') {
+                    const slot = Number(key);
+                    const item = playerProfile.equipped[`Weapon ${slot}`];
+                    if (item) {
+                        setSelectedWeaponSlot(slot);
+                    } else {
+                        setSelectedWeaponSlot(null);
+                    }
+                }
+            }
         });
+
+        function createRandomWeaponFromPool(baseName, category) {
+            const rarityNames = ['Common', 'Rare', 'Epic'];
+            const attackTypes = ['gravity', 'straight', 'slash'];
+            const rarity = rarityNames[Math.floor(Math.random() * rarityNames.length)];
+            const damage = 16 + Math.random() * 18;
+            const attackTime = 0.45 + Math.random() * 0.7;
+            const type = attackTypes[Math.floor(Math.random() * attackTypes.length)];
+            return buildWeapon(baseName, rarity, 1, damage, attackTime, type);
+        }
+
+        function createMarketListing(item) {
+            const card = document.createElement('div');
+            card.className = 'glass-panel p-3 rounded-xl';
+            card.innerHTML = `
+                <div class="flex justify-between items-center gap-2 mb-2">
+                    <span class="text-[10px] uppercase font-mono text-cyan-300">${item.rarity}</span>
+                    <span class="text-[10px] text-yellow-400 font-mono">${item.level} L</span>
+                </div>
+                <div class="font-orbitron text-sm text-white">${item.name}</div>
+                <div class="text-[10px] text-slate-400 mt-2">${getStatText(item)}</div>
+                <button class="buyListingBtn mt-3 w-full py-2 rounded-lg bg-cyan-900 hover:bg-cyan-800 text-cyan-200 text-[10px] font-orbitron" data-id="${item.id}">BUY ${Math.max(25, Math.round(item.damage * 2))} C</button>
+            `;
+            return card;
+        }
 
         function listenToMarket() {
-            if (!firebaseConnected || isOfflineGuest) return;
-            onValue(ref(db, 'market'), (snapshot) => {
-                const data = snapshot.val();
-                const container = document.getElementById('marketListings');
-                container.innerHTML = '';
-                if (!data) {
-                    container.innerHTML = `<div class="text-xs text-slate-500 py-4 font-mono">No active market listings.</div>`;
-                    return;
-                }
+            const marketListings = document.getElementById('marketListings');
+            if (!marketListings) return;
+            marketListings.innerHTML = '';
 
-                Object.values(data).forEach(listing => {
-                    const item = normalizeItem(listing.item || {});
-                    const card = document.createElement('div');
-                    card.className = 'item-card flex flex-col justify-between';
-                    card.innerHTML = `
-                        <div>
-                            <div class="flex items-center justify-between gap-2 mb-1">
-                                <span class="tag-badge">${item.category || 'weapon'}</span>
-                                <span class="tag-badge" style="color:${getRarityInfo(item.rarity || 'Common').color}; border-color:${getRarityInfo(item.rarity || 'Common').color};">${item.rarity || 'Common'}</span>
-                            </div>
-                            <div class="item-name">${listing.itemName || item.name}</div>
-                            <div class="mt-1 flex flex-wrap gap-1">
-                                ${(item.tags || []).slice(0, 3).map(tag => `<span class="tag-badge">${tag}</span>`).join('')}
-                            </div>
-                            <div class="stat-line mt-2">Seller: ${listing.sellerName || 'Unknown'}</div>
-                            <div class="stat-line">Lvl ${item.level || 1} • +${item.power || 0} Power</div>
-                        </div>
-                        <div class="flex items-center justify-between mt-3 pt-2 border-t border-slate-800">
-                            <span class="text-xs font-bold text-yellow-400 font-mono">${listing.price} C</span>
-                            ${listing.sellerId === (currentUser ? currentUser.uid : '') ?
-                                `<span class="text-[10px] text-slate-500 font-mono">Your Listing</span>` :
-                                `<button class="buyBtn px-3 py-1 bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/50 text-yellow-300 rounded text-xs font-orbitron" data-id="${listing.listingId || listing.id || ''}">BUY</button>`
-                            }
-                        </div>
-                    `;
-                    container.appendChild(card);
-                });
+            const listings = [
+                buildWeapon('Plasma Arc', 'Rare', 2, 26, 0.7, 'gravity'),
+                buildWeapon('Nova Shot', 'Rare', 2, 24, 0.75, 'straight'),
+                buildWeapon('Phoenix Slash', 'Epic', 3, 32, 0.55, 'slash'),
+                normalizeItem({ id: 'market_torso', name: 'Titan Chest', category: 'torso', type: 'Torso', rarity: 'Rare', level: 2, health: 150, speed: 0.08, tags: ['torso', 'heavy'] }),
+                normalizeItem({ id: 'market_module', name: 'Critical Cell', category: 'module', type: 'Module 1', rarity: 'Epic', level: 2, damageBoostPct: 0.12, healthBoostPct: 0.06, tags: ['module', 'crit'] })
+            ];
 
-                document.querySelectorAll('.buyBtn').forEach(btn => {
-                    btn.onclick = (e) => executePurchase(e.target.dataset.id);
-                });
+            listings.forEach(item => marketListings.appendChild(createMarketListing(item)));
+            document.querySelectorAll('.buyListingBtn').forEach(btn => {
+                btn.onclick = () => {
+                    const item = listings.find(entry => entry.id === btn.dataset.id);
+                    if (!item) return;
+                    if (playerProfile.balance < 25) {
+                        showToast('Not enough coins.', 'error');
+                        return;
+                    }
+                    playerProfile.balance -= 25;
+                    playerProfile.inventory.push(normalizeItem(item));
+                    saveProfile();
+                    showToast('Bought item from market.', 'success');
+                };
             });
         }
 
-        async function executePurchase(listingId) {
-            if (!firebaseConnected || isOfflineGuest) return;
-            const listingRef = ref(db, `market/${listingId}`);
-            const snapshot = await get(listingRef);
-            if (!snapshot.exists()) {
-                showToast('Listing no longer exists.', 'warn');
+        document.getElementById('btnListItem').addEventListener('click', () => {
+            const modal = document.getElementById('listItemModal');
+            if (modal) modal.classList.remove('hidden');
+        });
+
+        document.getElementById('cancelListBtn').addEventListener('click', () => {
+            document.getElementById('listItemModal').classList.add('hidden');
+        });
+
+        document.getElementById('confirmListBtn').addEventListener('click', () => {
+            const select = document.getElementById('listItemSelect');
+            const priceInput = document.getElementById('listItemPrice');
+            const idx = Number(select.value);
+            const item = playerProfile.inventory[idx];
+            const price = Number(priceInput.value || 0);
+            if (!item || price <= 0) {
+                showToast('Select a valid item and price.', 'error');
                 return;
             }
-
-            const listing = snapshot.val();
-            if (playerProfile.balance < listing.price) {
-                showToast('Insufficient Coins!', 'warn');
-                return;
-            }
-
-            const sellerRef = ref(db, `players/${listing.sellerId}`);
-            await runTransaction(sellerRef, (sellerData) => {
-                if (sellerData) {
-                    sellerData.balance = (sellerData.balance || 0) + listing.price;
-                }
-                return sellerData;
-            });
-
-            playerProfile.balance -= listing.price;
-            playerProfile.inventory.push(normalizeItem(listing.item));
+            playerProfile.inventory.splice(idx, 1);
+            playerProfile.balance += price;
             saveProfile();
-            await remove(listingRef);
-            showToast('Item purchased.', 'success');
-        }
+            document.getElementById('listItemModal').classList.add('hidden');
+            showToast(`Listed ${item.name} for ${price} coins.`, 'success');
+        });
 
         document.getElementById('btnOpenChest').addEventListener('click', () => {
             if (playerProfile.balance < 100) {
-                showToast('Requires 100 Coins!', 'warn');
+                showToast('Not enough coins for the chest.', 'error');
                 return;
             }
             playerProfile.balance -= 100;
-
-            const categories = [
-                { category: 'weapon', type: 'Weapon 1', name: 'Neon', tags: ['weapon','slash','energy'], attackType: 'slice' },
-                { category: 'weapon', type: 'Weapon 2', name: 'Pulse', tags: ['weapon','shoot','plasma'], attackType: 'shoot' },
-                { category: 'weapon', type: 'Weapon 3', name: 'Vortex', tags: ['weapon','throw','void'], attackType: 'throw' },
-                { category: 'torso', type: 'Torso', name: 'Titan', tags: ['torso','guard','steel'] },
-                { category: 'module', type: 'Module 1', name: 'Core', tags: ['module','shield','tech'] },
-                { category: 'module', type: 'Module 2', name: 'Prism', tags: ['module','boost','arcane'] }
-            ];
-
-            const template = categories[Math.floor(Math.random() * categories.length)];
-            const randomPower = Math.floor(Math.random() * 22) + 12;
-            const newItem = normalizeItem({
-                id: 'chest_' + Date.now(),
-                name: `${template.name} ${template.type}`,
-                category: template.category,
-                type: template.type,
-                rarity: 'Common',
-                level: 1,
-                xp: 0,
-                power: randomPower,
-                tags: template.tags,
-                attackType: template.attackType || 'slice'
-            });
-
-            playerProfile.inventory.push(newItem);
+            const chestRoll = Math.random();
+            let reward;
+            if (chestRoll < 0.5) {
+                reward = buildWeapon('Chrome Pulse', 'Rare', 2, 26 + Math.random() * 10, 0.75 + Math.random() * 0.25, Math.random() < 0.5 ? 'straight' : 'gravity');
+            } else if (chestRoll < 0.8) {
+                reward = normalizeItem({ id: 'chest_torso_' + Date.now(), name: 'Aegis Core', category: 'torso', type: 'Torso', rarity: 'Rare', level: 2, xp: 0, health: 150 + Math.random() * 50, speed: 0.06 + Math.random() * 0.04, tags: ['torso', 'heavy'] });
+            } else {
+                reward = normalizeItem({ id: 'chest_module_' + Date.now(), name: 'Overclock Cell', category: 'module', type: 'Module 1', rarity: 'Epic', level: 2, xp: 0, damageBoostPct: 0.12 + Math.random() * 0.08, healthBoostPct: 0.08 + Math.random() * 0.05, tags: ['module', 'overclock'] });
+            }
+            playerProfile.inventory.push(reward);
             saveProfile();
-            showToast(`Chest Opened! ${newItem.name} (+${newItem.power} Power)`, 'success');
+            showToast(`Chest opened: ${reward.name}`, 'success');
         });
 
-        function fuseItems(itemA, itemB) {
-            if (!itemA || !itemB) return null;
-            if (itemA.category !== itemB.category) {
-                showToast('Fusion requires matching item types.', 'warn');
-                return null;
-            }
+        const forgeState = {
+            targetWeaponId: null,
+            selectedBoostIds: []
+        };
 
-            const base = normalizeItem(itemA);
-            const source = normalizeItem(itemB);
-            const merged = normalizeItem({
-                ...base,
-                id: `fuse_${Date.now()}`,
-                xp: Math.min((base.xp || 0) + Math.round((source.xp || 0) * 0.5) + Math.round(((source.level || 1) * 100) * 0.5), 999999),
-                power: Math.round((base.power || 0) + (source.power || 0) * 0.35),
-                tags: [...new Set([...(base.tags || []), ...(source.tags || [])])].slice(0, 3)
+        function renderForgeInventory() {
+            const container = document.getElementById('forgeInventory');
+            if (!container) return;
+            container.innerHTML = '';
+            (playerProfile.inventory || []).forEach(item => {
+                const normalized = normalizeItem(item);
+                if (!normalized || normalized.category !== 'weapon' && normalized.category !== 'module' && normalized.category !== 'torso') return;
+                const selected = forgeState.selectedBoostIds.includes(normalized.id);
+                const target = forgeState.targetWeaponId === normalized.id;
+                const card = document.createElement('div');
+                card.className = `item-card flex flex-col justify-between ${selected ? 'ring-2 ring-amber-400' : ''} ${target ? 'ring-2 ring-cyan-400' : ''}`;
+                card.style.borderColor = target ? 'rgba(34,211,238,0.9)' : selected ? 'rgba(251,191,36,0.9)' : 'rgba(148,163,184,0.25)';
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-center gap-2 mb-1">
+                            <span class="tag-badge">${normalized.category}</span>
+                            <span class="tag-badge" style="color:${getRarityInfo(normalized.rarity).color}; border-color:${getRarityInfo(normalized.rarity).color};">${normalized.rarity}</span>
+                        </div>
+                        <div class="item-name">${normalized.name}</div>
+                        <div class="mt-1 flex flex-wrap gap-1">
+                            ${(normalized.tags || []).slice(0, 3).map(tag => `<span class="tag-badge">${tag}</span>`).join('')}
+                        </div>
+                        <div class="stat-line mt-2">Lvl ${normalized.level} • ${getStatText(normalized)}</div>
+                        <div class="stat-line">XP ${normalized.xp}/${getLevelThreshold(normalized)}</div>
+                    </div>
+                    <div class="flex gap-2 mt-2">
+                        <button class="forgeTargetBtn flex-1 py-1 bg-cyan-950 hover:bg-cyan-900 border border-cyan-500/40 text-cyan-300 rounded font-orbitron text-[10px]" data-id="${normalized.id}">TARGET</button>
+                        <button class="forgeSelectBtn flex-1 py-1 bg-amber-950 hover:bg-amber-900 border border-amber-500/40 text-amber-300 rounded font-orbitron text-[10px]" data-id="${normalized.id}">${selected ? 'UNSELECT' : 'BOOST'}</button>
+                    </div>
+                `;
+                container.appendChild(card);
             });
 
-            const result = applyXpToItem(merged, 0);
-            return result;
+            const targetItem = forgeState.targetWeaponId ? getInventoryItemById(forgeState.targetWeaponId) : null;
+            const targetSummary = document.getElementById('forgeTargetSummary');
+            const selectionSummary = document.getElementById('forgeSelectionSummary');
+            const projectedSummary = document.getElementById('forgeProjectedSummary');
+
+            if (targetItem) {
+                const weapon = normalizeItem(targetItem);
+                targetSummary.innerHTML = `<div class="font-bold text-white">${weapon.name}</div><div>${getStatText(weapon)}</div>`;
+            } else {
+                targetSummary.textContent = 'None selected';
+            }
+
+            const selectedBoosts = (forgeState.selectedBoostIds || [])
+                .map(id => getInventoryItemById(id))
+                .filter(Boolean)
+                .map(item => normalizeItem(item));
+
+            if (selectedBoosts.length) {
+                selectionSummary.innerHTML = selectedBoosts.map(item => `<div>${item.name} (${item.rarity})</div>`).join('');
+            } else {
+                selectionSummary.textContent = 'No boosts selected';
+            }
+
+            if (targetItem && selectedBoosts.length) {
+                const target = normalizeItem(targetItem);
+                const totalBoostXp = selectedBoosts.reduce((sum, item) => sum + (Number(item.xp) || 0) + (Number(item.level) || 1) * 100, 0);
+                const projected = applyXpToItem(target, totalBoostXp);
+                projectedSummary.innerHTML = `<div class="font-bold text-amber-300">${projected.name}</div><div>XP ${projected.xp}/${getLevelThreshold(projected)}</div><div>DMG ${Math.round(projected.damage)} • ATK ${projected.attackTime.toFixed(2)}s</div>`;
+            } else {
+                projectedSummary.textContent = 'Need target + boosts';
+            }
+
+            document.querySelectorAll('.forgeTargetBtn').forEach(btn => {
+                btn.onclick = () => {
+                    const id = btn.dataset.id;
+                    const item = getInventoryItemById(id);
+                    if (!item) return;
+                    if (item.category === 'weapon') {
+                        forgeState.targetWeaponId = id;
+                    } else {
+                        forgeState.targetWeaponId = null;
+                    }
+                    renderForgeInventory();
+                };
+            });
+
+            document.querySelectorAll('.forgeSelectBtn').forEach(btn => {
+                btn.onclick = () => {
+                    const id = btn.dataset.id;
+                    const item = getInventoryItemById(id);
+                    if (!item) return;
+                    const idx = forgeState.selectedBoostIds.indexOf(id);
+                    if (idx >= 0) {
+                        forgeState.selectedBoostIds.splice(idx, 1);
+                    } else {
+                        if (forgeState.selectedBoostIds.length < 4) {
+                            forgeState.selectedBoostIds.push(id);
+                        }
+                    }
+                    renderForgeInventory();
+                };
+            });
         }
 
         document.getElementById('btnForgeUpgrade').addEventListener('click', () => {
-            const aIndex = parseInt(document.getElementById('forgeSelectA').value, 10);
-            const bIndex = parseInt(document.getElementById('forgeSelectB').value, 10);
-            if (isNaN(aIndex) || isNaN(bIndex) || aIndex === bIndex) {
-                showToast('Select two different items to fuse.', 'warn');
+            if (!forgeState.targetWeaponId) {
+                showToast('Select the weapon you want to upgrade first.', 'warn');
+                return;
+            }
+            const target = getInventoryItemById(forgeState.targetWeaponId);
+            if (!target || normalizeItem(target).category !== 'weapon') {
+                showToast('Target must be a weapon.', 'error');
+                return;
+            }
+            const selectedBoosts = forgeState.selectedBoostIds
+                .map(id => getInventoryItemById(id))
+                .filter(Boolean)
+                .filter(item => item.id !== forgeState.targetWeaponId);
+
+            if (!selectedBoosts.length) {
+                showToast('Select at least one boost item.', 'warn');
                 return;
             }
 
-            const itemA = normalizeItem(playerProfile.inventory[aIndex]);
-            const itemB = normalizeItem(playerProfile.inventory[bIndex]);
-            const merged = fuseItems(itemA, itemB);
-            if (!merged) return;
+            let updatedTarget = normalizeItem(target);
+            let totalXpGain = 0;
+            selectedBoosts.forEach(item => {
+                const boost = normalizeItem(item);
+                totalXpGain += (Number(boost.level) || 1) * 100 + (Number(boost.xp) || 0);
+            });
 
-            playerProfile.inventory.splice(Math.max(aIndex, bIndex), 1);
-            playerProfile.inventory.splice(Math.min(aIndex, bIndex), 1);
-            playerProfile.inventory.push(merged);
+            updatedTarget = applyXpToItem(updatedTarget, totalXpGain);
+            updatedTarget.damage = Math.max(8, Number(updatedTarget.damage || updatedTarget.power || 10));
+            updatedTarget.attackTime = clamp(Number(updatedTarget.attackTime || 0.8), 0.2, 2.2);
+            updatedTarget.power = updatedTarget.damage;
+
+            const remainingInventory = playerProfile.inventory.filter(item => !forgeState.selectedBoostIds.includes(item.id) && item.id !== forgeState.targetWeaponId);
+            playerProfile.inventory = [...remainingInventory, updatedTarget];
+
+            const targetMatches = playerProfile.equipped['Weapon 1'];
+            if (targetMatches && targetMatches.id === forgeState.targetWeaponId) playerProfile.equipped['Weapon 1'] = updatedTarget;
+            if (playerProfile.equipped['Weapon 2'] && playerProfile.equipped['Weapon 2'].id === forgeState.targetWeaponId) playerProfile.equipped['Weapon 2'] = updatedTarget;
+            if (playerProfile.equipped['Weapon 3'] && playerProfile.equipped['Weapon 3'].id === forgeState.targetWeaponId) playerProfile.equipped['Weapon 3'] = updatedTarget;
+
+            forgeState.targetWeaponId = null;
+            forgeState.selectedBoostIds = [];
             saveProfile();
-            showToast(`${merged.name} fused successfully.`, 'success');
+            renderForgeInventory();
+            updateUI();
+            showToast(`Fusion complete: ${updatedTarget.name} gained XP.`, 'success');
         });
 
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        let width = canvas.width = window.innerWidth;
-        let height = canvas.height = window.innerHeight;
-
-        window.addEventListener('resize', () => {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-        });
-
-        let gameState = 'MENU';
-        let score = 0;
-        let keys = {};
-        let currentStage = 1;
-
-        const player = {
-            x: 100,
-            y: 300,
-            w: 24,
-            h: 36,
-            vx: 0,
-            vy: 0,
-            speed: 7.2,
-            jumpPower: -17,
-            grounded: false,
-            health: 100,
-            attacking: false,
-            attackTimer: 0,
-            direction: 1
+        const battleState = {
+            active: false,
+            selectedSlot: 1,
+            currentStage: null,
+            player: null,
+            enemies: [],
+            projectiles: [],
+            effects: [],
+            platforms: [],
+            mouse: { x: 0, y: 0 },
+            keys: { left: false, right: false },
+            result: null,
+            lastTime: 0,
+            nextRewardDelay: 0
         };
 
-        let platforms = [];
-        let enemies = [];
-        let projectiles = [];
-
-        function buildStage(stageIndex) {
-            const stage = stageIndex || 1;
-            platforms = [
-                { x: 0, y: height - 40, w: width, h: 40 },
-                { x: width * 0.08, y: height - 150, w: 180, h: 15 },
-                { x: width * 0.27, y: height - 220, w: 200, h: 15 },
-                { x: width * 0.45, y: height - 290, w: 220, h: 15 },
-                { x: width * 0.66, y: height - 210, w: 180, h: 15 },
-                { x: width * 0.8, y: height - 150, w: 160, h: 15 }
-            ];
-
-            const enemyCount = 3 + stage;
-            enemies = [];
-            for (let i = 0; i < enemyCount; i++) {
-                const baseX = 120 + (i * (width / (enemyCount + 1)));
-                enemies.push({
-                    x: baseX,
-                    y: height - 90 - (i % 2) * 70,
-                    w: 26,
-                    h: 26,
-                    vx: (i % 2 === 0 ? 1.4 : -1.4) * (1 + stage * 0.15),
-                    minX: 60 + i * 60,
-                    maxX: width - 80,
-                    hp: 30 + stage * 10,
-                    color: ['#f87171', '#fbbf24', '#c084fc', '#34d399'][i % 4]
-                });
+        const stageConfigs = {
+            1: {
+                name: 'Neon Rift',
+                spawn: { x: 80, y: 130 },
+                platforms: [
+                    { x: 0, y: 560, w: 1200, h: 60 },
+                    { x: 100, y: 470, w: 170, h: 20 },
+                    { x: 320, y: 420, w: 170, h: 20 },
+                    { x: 560, y: 380, w: 180, h: 20 },
+                    { x: 790, y: 335, w: 160, h: 20 },
+                    { x: 1000, y: 430, w: 160, h: 20 },
+                    { x: 220, y: 260, w: 120, h: 18 },
+                    { x: 500, y: 220, w: 150, h: 18 }
+                ],
+                enemies: [
+                    { x: 700, y: 520, health: 55, maxHealth: 55, speed: 84, damage: 12 },
+                    { x: 930, y: 390, health: 65, maxHealth: 65, speed: 90, damage: 14 },
+                    { x: 390, y: 180, health: 70, maxHealth: 70, speed: 95, damage: 15 }
+                ]
+            },
+            2: {
+                name: 'Skyline Ruins',
+                spawn: { x: 90, y: 170 },
+                platforms: [
+                    { x: 0, y: 560, w: 1200, h: 60 },
+                    { x: 150, y: 460, w: 180, h: 20 },
+                    { x: 390, y: 410, w: 170, h: 20 },
+                    { x: 630, y: 350, w: 180, h: 20 },
+                    { x: 880, y: 300, w: 200, h: 20 },
+                    { x: 220, y: 270, w: 120, h: 18 },
+                    { x: 510, y: 225, w: 140, h: 18 },
+                    { x: 790, y: 190, w: 150, h: 18 }
+                ],
+                enemies: [
+                    { x: 680, y: 520, health: 68, maxHealth: 68, speed: 95, damage: 15 },
+                    { x: 920, y: 260, health: 78, maxHealth: 78, speed: 100, damage: 16 },
+                    { x: 310, y: 230, health: 72, maxHealth: 72, speed: 92, damage: 15 }
+                ]
+            },
+            3: {
+                name: 'Crimson Vault',
+                spawn: { x: 80, y: 150 },
+                platforms: [
+                    { x: 0, y: 560, w: 1200, h: 60 },
+                    { x: 120, y: 470, w: 180, h: 18 },
+                    { x: 350, y: 420, w: 160, h: 18 },
+                    { x: 560, y: 360, w: 180, h: 18 },
+                    { x: 830, y: 310, w: 180, h: 18 },
+                    { x: 220, y: 250, w: 150, h: 18 },
+                    { x: 490, y: 215, w: 180, h: 18 },
+                    { x: 760, y: 180, w: 170, h: 18 }
+                ],
+                enemies: [
+                    { x: 760, y: 520, health: 84, maxHealth: 84, speed: 98, damage: 18 },
+                    { x: 950, y: 270, health: 92, maxHealth: 92, speed: 105, damage: 19 },
+                    { x: 405, y: 180, health: 90, maxHealth: 90, speed: 100, damage: 19 }
+                ]
+            },
+            4: {
+                name: 'Void Arc',
+                spawn: { x: 80, y: 165 },
+                platforms: [
+                    { x: 0, y: 560, w: 1200, h: 60 },
+                    { x: 110, y: 470, w: 170, h: 18 },
+                    { x: 330, y: 420, w: 180, h: 18 },
+                    { x: 590, y: 370, w: 180, h: 18 },
+                    { x: 850, y: 320, w: 180, h: 18 },
+                    { x: 220, y: 260, w: 130, h: 18 },
+                    { x: 700, y: 220, w: 150, h: 18 },
+                    { x: 930, y: 190, w: 120, h: 18 }
+                ],
+                enemies: [
+                    { x: 620, y: 520, health: 98, maxHealth: 98, speed: 102, damage: 20 },
+                    { x: 920, y: 280, health: 105, maxHealth: 105, speed: 110, damage: 22 },
+                    { x: 470, y: 180, health: 110, maxHealth: 110, speed: 108, damage: 21 }
+                ]
             }
-            projectiles = [];
+        };
+
+        function getBattleModuleStats() {
+            const items = ['Module 1', 'Module 2']
+                .map(slot => playerProfile.equipped && playerProfile.equipped[slot])
+                .filter(Boolean);
+            const damagePercent = items.reduce((total, item) => total + (Number(item.damageBoostPct) || 0), 0);
+            const healthPercent = items.reduce((total, item) => total + (Number(item.healthBoostPct) || 0), 0);
+            return { damagePercent, healthPercent };
         }
+
+        function getBattlePlayerStats() {
+            const torso = playerProfile.equipped && playerProfile.equipped['Torso'];
+            const modules = ['Module 1', 'Module 2']
+                .map(slot => playerProfile.equipped && playerProfile.equipped[slot])
+                .filter(Boolean);
+            const baseHealth = 100;
+            const baseSpeed = 1;
+            const torsoHealth = torso ? Number(torso.health || 0) : 0;
+            const torsoSpeed = torso ? Number(torso.speed || 0) : 0;
+            const moduleHealth = modules.reduce((sum, item) => sum + (Number(item.healthBoostPct || 0) * 100), 0);
+            const moduleSpeed = modules.reduce((sum, item) => sum + (Number(item.speed || 0) || 0), 0);
+            const maxHealth = baseHealth + torsoHealth + moduleHealth;
+            const moveSpeed = (baseSpeed + torsoSpeed + moduleSpeed) * 220;
+            return {
+                maxHealth,
+                moveSpeed,
+                damagePercent: modules.reduce((sum, item) => sum + (Number(item.damageBoostPct || 0) || 0), 0),
+                healthPercent: 1 + (torso ? (Number(torso.health || 0) / 100) : 0)
+            };
+        }
+
+        function getSelectedWeapon() {
+            const slotNum = battleState.selectedSlot || 1;
+            const key = `Weapon ${slotNum}`;
+            const item = playerProfile.equipped && playerProfile.equipped[key];
+            return item ? normalizeItem(item) : null;
+        }
+
+        function setBattleMessage(text, duration = 2.2, type = 'info') {
+            const panel = document.createElement('div');
+            panel.style.position = 'absolute';
+            panel.style.left = '50%';
+            panel.style.top = '18px';
+            panel.style.transform = 'translateX(-50%)';
+            panel.style.zIndex = '60';
+            panel.style.padding = '10px 16px';
+            panel.style.borderRadius = '12px';
+            panel.style.fontFamily = 'Orbitron, sans-serif';
+            panel.style.fontSize = '12px';
+            panel.style.fontWeight = '700';
+            panel.style.letterSpacing = '1px';
+            panel.style.textTransform = 'uppercase';
+            panel.style.border = '1px solid rgba(255,255,255,0.18)';
+            panel.style.background = type === 'error' ? 'rgba(127,29,29,0.8)' : type === 'success' ? 'rgba(20,83,45,0.8)' : 'rgba(15,23,42,0.8)';
+            panel.style.color = '#fff';
+            panel.textContent = text;
+            panel.setAttribute('data-message', '1');
+            document.body.appendChild(panel);
+            setTimeout(() => panel.remove(), duration * 1000);
+        }
+
+        function returnToMenuAfterDelay(message, type, delay = 2600) {
+            setBattleMessage(message, delay / 1000, type);
+            setTimeout(() => {
+                battleState.active = false;
+                closeAllScreens();
+                battleSelectScreen.classList.remove('hidden');
+                mainMenu.classList.remove('hidden');
+                document.getElementById('gameHud').classList.add('hidden');
+                if (document.getElementById('battleHotbar')) document.getElementById('battleHotbar').remove();
+                if (document.querySelector('[data-message="1"]')) document.querySelector('[data-message="1"]').remove();
+            }, delay);
+        }
+
+        function onStageVictory() {
+            if (battleState.result) return;
+            battleState.result = 'won';
+            playerProfile.balance += 500;
+            saveProfile();
+            showToast('Level cleared! +500 Coins', 'success');
+            returnToMenuAfterDelay('STAGE CLEAR', 'success', 2200);
+        }
+
+        function onStageDefeat() {
+            if (battleState.result) return;
+            battleState.result = 'lost';
+            returnToMenuAfterDelay('LEVEL LOST YOU DIED!', 'error', 3000);
+        }
+
+        function beginStage(stageNumber) {
+            const config = stageConfigs[stageNumber];
+            if (!config) return;
+
+            battleState.active = true;
+            battleState.result = null;
+            battleState.currentStage = stageNumber;
+            battleState.platforms = config.platforms.map(p => ({ ...p }));
+            battleState.enemies = config.enemies.map(enemy => ({
+                ...enemy,
+                w: 26,
+                h: 28,
+                vx: 0,
+                vy: 0,
+                dir: -1,
+                onGround: false,
+                alive: true,
+                hitFlash: 0,
+                score: 100
+            }));
+            battleState.projectiles = [];
+            battleState.effects = [];
+
+            const playerStats = getBattlePlayerStats();
+            battleState.player = {
+                x: config.spawn.x,
+                y: config.spawn.y,
+                w: 28,
+                h: 42,
+                vx: 0,
+                vy: 0,
+                onGround: false,
+                speed: playerStats.moveSpeed,
+                jumpStrength: 480,
+                health: playerStats.maxHealth,
+                maxHealth: playerStats.maxHealth,
+                dir: 1,
+                cooldown: 0,
+                invuln: 0,
+                facing: 1
+            };
+
+            battleState.mouse.x = battleState.player.x + 120;
+            battleState.mouse.y = battleState.player.y;
+            setSelectedWeaponSlot(Math.max(1, Math.min(3, battleState.selectedSlot || 1)));
+            refreshBattleHotbar();
+            document.getElementById('gameHud').classList.remove('hidden');
+            battleSelectScreen.classList.add('hidden');
+            mainMenu.classList.add('hidden');
+            closeAllScreens();
+            document.getElementById('gameHud').classList.remove('hidden');
+            updateBattleHud();
+        }
+
+        function updateBattleHud() {
+            const player = battleState.player;
+            if (!player) return;
+            const healthPercent = clamp((player.health / player.maxHealth) * 100, 0, 100);
+            const healthBar = document.getElementById('healthBar');
+            if (healthBar) healthBar.style.width = `${healthPercent}%`;
+            const healthText = document.getElementById('healthText');
+            if (healthText) healthText.textContent = `${Math.round(player.health)}/${Math.round(player.maxHealth)}`;
+            const hudGold = document.getElementById('hudGold');
+            if (hudGold) hudGold.textContent = `${playerProfile.balance} C`;
+            const hudScore = document.getElementById('hudScore');
+            if (hudScore) hudScore.textContent = `${Math.round((player.maxHealth - player.health) * -1)}`;
+        }
+
+        function isGrounded(entity) {
+            return entity.onGround;
+        }
+
+        function resolvePlatformCollisions(entity, dt) {
+            const previousY = entity.y - entity.vy * dt;
+            const previousX = entity.x - entity.vx * dt;
+            entity.onGround = false;
+
+            for (const platform of battleState.platforms) {
+                const withinX = entity.x + entity.w > platform.x && entity.x < platform.x + platform.w;
+                const wasAbove = previousY + entity.h <= platform.y + 8;
+                const passingThrough = entity.y + entity.h >= platform.y && entity.y + entity.h <= platform.y + platform.h + 12;
+                if (withinX && wasAbove && passingThrough && entity.vy >= 0) {
+                    entity.y = platform.y - entity.h;
+                    entity.vy = 0;
+                    entity.onGround = true;
+                }
+
+                const wasBelow = previousY >= platform.y + platform.h - 8;
+                const goingUp = entity.vy < 0;
+                if (withinX && wasBelow && goingUp && entity.y <= platform.y + platform.h) {
+                    entity.y = platform.y + platform.h;
+                    entity.vy = 0;
+                }
+
+                if (entity.x + entity.w > platform.x && entity.x < platform.x + platform.w && entity.y + entity.h > platform.y && entity.y < platform.y + platform.h) {
+                    if (previousX + entity.w <= platform.x + 8 && entity.vx > 0) {
+                        entity.x = platform.x - entity.w;
+                        entity.vx = 0;
+                    }
+                    if (previousX >= platform.x + platform.w - 8 && entity.vx < 0) {
+                        entity.x = platform.x + platform.w;
+                        entity.vx = 0;
+                    }
+                }
+            }
+
+            if (entity.y > 620) {
+                entity.y = 560 - entity.h;
+                entity.vy = 0;
+                entity.onGround = true;
+            }
+        }
+
+        function handlePlayerInput(dt) {
+            const player = battleState.player;
+            if (!player) return;
+
+            let move = 0;
+            if (battleState.keys.left) move -= 1;
+            if (battleState.keys.right) move += 1;
+            if (move !== 0) {
+                player.vx = move * player.speed * dt;
+                player.dir = move > 0 ? 1 : -1;
+            } else {
+                player.vx *= 0.8;
+            }
+
+            player.x += player.vx;
+            player.y += player.vy * dt;
+            player.vy += 820 * dt;
+
+            resolvePlatformCollisions(player, dt);
+
+            if (battleState.keys.jump && player.onGround) {
+                player.vy = -player.jumpStrength;
+                player.onGround = false;
+            }
+
+            if (player.cooldown > 0) player.cooldown -= dt;
+            if (player.invuln > 0) player.invuln -= dt;
+
+            player.x = clamp(player.x, 0, 1160 - player.w);
+            player.y = clamp(player.y, 0, 620);
+        }
+
+        function spawnProjectileFromPlayer() {
+            const weapon = getSelectedWeapon();
+            if (!weapon || battleState.player.cooldown > 0) return;
+
+            const player = battleState.player;
+            const targetX = battleState.mouse.x;
+            const targetY = battleState.mouse.y;
+            const dx = targetX - (player.x + player.w / 2);
+            const dy = targetY - (player.y + player.h / 2);
+            const len = Math.hypot(dx, dy) || 1;
+            const damage = Math.round(getWeaponDamage(weapon));
+            battleState.player.cooldown = Number(weapon.attackTime || 0.75);
+
+            if (weapon.attackType === 'gravity') {
+                battleState.projectiles.push({
+                    x: player.x + player.w / 2,
+                    y: player.y + player.h / 2,
+                    vx: (dx / len) * 420,
+                    vy: (dy / len) * 420,
+                    radius: 7,
+                    gravity: 280,
+                    damage,
+                    color: '#67e8f9',
+                    ttl: 2.0,
+                    source: 'player',
+                    type: 'gravity'
+                });
+            } else if (weapon.attackType === 'straight') {
+                battleState.projectiles.push({
+                    x: player.x + player.w / 2,
+                    y: player.y + player.h / 2,
+                    vx: (dx / len) * 560,
+                    vy: (dy / len) * 560,
+                    radius: 6,
+                    gravity: 0,
+                    damage,
+                    color: '#fbbf24',
+                    ttl: 1.7,
+                    source: 'player',
+                    type: 'straight'
+                });
+            } else {
+                battleState.effects.push({
+                    x: player.x + player.dir * 28,
+                    y: player.y + 8,
+                    w: 46,
+                    h: 26,
+                    ttl: 0.18,
+                    damage,
+                    color: '#f472b6',
+                    source: 'player',
+                    type: 'slash'
+                });
+                if (battleState.enemies.length) {
+                    for (const enemy of battleState.enemies) {
+                        const nearX = Math.abs((player.x + player.w / 2) - (enemy.x + enemy.w / 2)) < 54;
+                        const nearY = Math.abs((player.y + player.h / 2) - (enemy.y + enemy.h / 2)) < 34;
+                        if (nearX && nearY && enemy.alive) {
+                            enemy.health -= damage;
+                            enemy.hitFlash = 0.12;
+                        }
+                    }
+                }
+            }
+        }
+
+        function getWeaponDamage(weapon) {
+            const weaponData = normalizeItem(weapon);
+            const moduleBuff = getBattleModuleStats().damagePercent;
+            return (Number(weaponData.damage) || 10) * (1 + moduleBuff);
+        }
+
+        function updateProjectiles(dt) {
+            for (let i = battleState.projectiles.length - 1; i >= 0; i--) {
+                const proj = battleState.projectiles[i];
+                proj.x += proj.vx * dt;
+                proj.y += proj.vy * dt;
+                proj.vy += proj.gravity * dt;
+                proj.ttl -= dt;
+
+                if (proj.ttl <= 0) {
+                    battleState.projectiles.splice(i, 1);
+                    continue;
+                }
+
+                for (const enemy of battleState.enemies) {
+                    if (!enemy.alive) continue;
+                    const hit = proj.x + proj.radius > enemy.x && proj.x - proj.radius < enemy.x + enemy.w && proj.y + proj.radius > enemy.y && proj.y - proj.radius < enemy.y + enemy.h;
+                    if (hit) {
+                        enemy.health -= proj.damage;
+                        enemy.hitFlash = 0.12;
+                        battleState.projectiles.splice(i, 1);
+                        break;
+                    }
+                }
+                if (i < 0) continue;
+                if (proj.x < 0 || proj.x > 1200 || proj.y < 0 || proj.y > 600) {
+                    battleState.projectiles.splice(i, 1);
+                }
+            }
+
+            for (let i = battleState.effects.length - 1; i >= 0; i--) {
+                const effect = battleState.effects[i];
+                effect.ttl -= dt;
+                if (effect.ttl <= 0) {
+                    battleState.effects.splice(i, 1);
+                }
+            }
+        }
+
+        function updateEnemies(dt) {
+            for (const enemy of battleState.enemies) {
+                if (!enemy.alive) continue;
+                if (enemy.hitFlash > 0) enemy.hitFlash -= dt;
+                const player = battleState.player;
+                const dir = player.x + player.w / 2 > enemy.x + enemy.w / 2 ? 1 : -1;
+                enemy.dir = dir;
+                enemy.vx = dir * enemy.speed * dt;
+                enemy.x += enemy.vx;
+                enemy.vy += 820 * dt;
+                enemy.y += enemy.vy * dt;
+
+                const prevX = enemy.x - enemy.vx;
+                const prevY = enemy.y - enemy.vy * dt;
+                enemy.onGround = false;
+                for (const platform of battleState.platforms) {
+                    const withinX = enemy.x + enemy.w > platform.x && enemy.x < platform.x + platform.w;
+                    const wasAbove = prevY + enemy.h <= platform.y + 8;
+                    const passing = enemy.y + enemy.h >= platform.y && enemy.y + enemy.h <= platform.y + platform.h + 12;
+                    if (withinX && wasAbove && passing && enemy.vy >= 0) {
+                        enemy.y = platform.y - enemy.h;
+                        enemy.vy = 0;
+                        enemy.onGround = true;
+                    }
+                    if (enemy.x + enemy.w > platform.x && enemy.x < platform.x + platform.w && enemy.y + enemy.h > platform.y && enemy.y < platform.y + platform.h) {
+                        if (prevX + enemy.w <= platform.x + 8 && enemy.vx > 0) enemy.x = platform.x - enemy.w;
+                        if (prevX >= platform.x + platform.w - 8 && enemy.vx < 0) enemy.x = platform.x + platform.w;
+                    }
+                }
+
+                if (enemy.y > 620) {
+                    enemy.y = 560 - enemy.h;
+                    enemy.vy = 0;
+                    enemy.onGround = true;
+                }
+
+                const px = player.x + player.w / 2;
+                const ex = enemy.x + enemy.w / 2;
+                if (Math.abs(px - ex) < 28 && Math.abs(player.y - enemy.y) < 40 && player.invuln <= 0) {
+                    player.health -= enemy.damage;
+                    player.invuln = 0.8;
+                    showToast('You got hit!', 'error');
+                    sfx.playHit();
+                }
+            }
+
+            for (let i = battleState.enemies.length - 1; i >= 0; i--) {
+                const enemy = battleState.enemies[i];
+                if (enemy.health <= 0) {
+                    enemy.alive = false;
+                    battleState.enemies.splice(i, 1);
+                }
+            }
+            if (battleState.enemies.length === 0 && battleState.active) {
+                onStageVictory();
+            }
+        }
+
+        function updatePlayerDamage(dt) {
+            const player = battleState.player;
+            if (!player) return;
+            if (player.health <= 0) {
+                onStageDefeat();
+            }
+        }
+
+        function updateBattle(dt) {
+            if (!battleState.active || !battleState.player) return;
+            handlePlayerInput(dt);
+            updateProjectiles(dt);
+            updateEnemies(dt);
+            updatePlayerDamage(dt);
+            updateBattleHud();
+        }
+
+        function drawStage() {
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width = window.innerWidth;
+            const height = canvas.height = window.innerHeight;
+
+            ctx.clearRect(0, 0, width, height);
+            const bg = ctx.createLinearGradient(0, 0, 0, height);
+            bg.addColorStop(0, '#020617');
+            bg.addColorStop(1, '#0f172a');
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.fillStyle = 'rgba(15, 118, 110, 0.08)';
+            for (let x = 0; x < width; x += 40) {
+                ctx.fillRect(x, 0, 1, height);
+            }
+
+            for (const platform of battleState.platforms) {
+                ctx.fillStyle = 'rgba(14, 116, 144, 0.7)';
+                ctx.fillRect(platform.x, platform.y, platform.w, platform.h);
+                ctx.fillStyle = 'rgba(103, 232, 249, 0.4)';
+                ctx.fillRect(platform.x, platform.y, platform.w, 4);
+            }
+
+            const player = battleState.player;
+            if (player) {
+                ctx.fillStyle = '#a5f3fc';
+                ctx.fillRect(player.x, player.y, player.w, player.h);
+                ctx.fillStyle = '#5eead4';
+                const healthWidth = (player.health / player.maxHealth) * player.w;
+                ctx.fillRect(player.x, player.y - 10, healthWidth, 5);
+            }
+
+            for (const enemy of battleState.enemies) {
+                ctx.fillStyle = enemy.hitFlash > 0 ? '#fda4af' : '#f472b6';
+                ctx.fillRect(enemy.x, enemy.y, enemy.w, enemy.h);
+                ctx.fillStyle = '#1f2937';
+                ctx.fillRect(enemy.x, enemy.y - 8, enemy.w, 5);
+                ctx.fillStyle = '#22c55e';
+                const enemyHealth = (enemy.health / enemy.maxHealth) * enemy.w;
+                ctx.fillRect(enemy.x, enemy.y - 8, enemyHealth, 5);
+            }
+
+            for (const proj of battleState.projectiles) {
+                ctx.fillStyle = proj.color;
+                ctx.beginPath();
+                ctx.arc(proj.x, proj.y, proj.radius, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            for (const effect of battleState.effects) {
+                const x = effect.x;
+                const y = effect.y;
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.fillStyle = 'rgba(244, 114, 182, 0.7)';
+                ctx.fillRect(0, 0, effect.w, effect.h);
+                ctx.restore();
+            }
+        }
+
+        function animationLoop(timestamp) {
+            const dt = Math.min(0.022, (timestamp - (battleState.lastTime || timestamp)) / 1000 || 0.016);
+            battleState.lastTime = timestamp;
+
+            updateBattle(dt);
+            drawStage();
+            requestAnimationFrame(animationLoop);
+        }
+
+        document.getElementById('btnPlay').addEventListener('click', () => {
+            battleSelectScreen.classList.remove('hidden');
+            mainMenu.classList.add('hidden');
+        });
 
         document.querySelectorAll('.stageBtn').forEach(btn => {
             btn.addEventListener('click', () => {
-                const stage = Number(btn.dataset.stage);
-                currentStage = stage;
-                startBattle(stage);
+                const stage = Number(btn.dataset.stage || 1);
+                beginStage(stage);
             });
         });
 
@@ -1285,246 +2006,72 @@
             mainMenu.classList.remove('hidden');
         });
 
-        window.addEventListener('keydown', (e) => { keys[e.code] = true; });
-        window.addEventListener('keyup', (e) => { keys[e.code] = false; });
-        window.addEventListener('mousedown', () => { if (gameState === 'PLAYING') triggerAttack(); });
-
-        function triggerAttack() {
-            if (!player.attacking) {
-                player.attacking = true;
-                player.attackTimer = 15;
-                sfx.playHit();
-
-                const weapon = getEquippedWeapon();
-                const attackType = weapon ? (weapon.attackType || 'slice') : 'slice';
-                const damage = (weapon ? Number(weapon.power || 10) : 10) * (0.8 + (playerProfile.equipped ? getStatBonus() / 250 : 0));
-
-                if (attackType === 'shoot') {
-                    projectiles.push({
-                        x: player.x + player.w / 2 + player.direction * 18,
-                        y: player.y + 12,
-                        w: 10,
-                        h: 6,
-                        vx: player.direction * 8,
-                        vy: 0,
-                        damage: damage,
-                        color: '#7dd3fc'
-                    });
-                } else if (attackType === 'throw') {
-                    projectiles.push({
-                        x: player.x + player.w / 2,
-                        y: player.y + 8,
-                        w: 12,
-                        h: 12,
-                        vx: player.direction * 7,
-                        vy: -2,
-                        damage: damage,
-                        color: '#f9a8d4'
-                    });
-                } else {
-                    enemies.forEach(enemy => {
-                        if (Math.abs(player.x - enemy.x) < 40 && Math.abs(player.y - enemy.y) < 40) {
-                            enemy.hp -= damage;
-                        }
-                    });
-                }
-            }
-        }
-
-        document.getElementById('btnPlay').addEventListener('click', () => {
-            sfx.playClick();
-            battleSelectScreen.classList.remove('hidden');
-            mainMenu.classList.add('hidden');
-        });
-
-        function startBattle(stage) {
-            battleSelectScreen.classList.add('hidden');
-            gameState = 'PLAYING';
-            document.getElementById('gameHud').classList.remove('hidden');
-            player.x = 100;
-            player.y = 100;
-            player.health = 100;
-            player.vx = 0;
-            player.vy = 0;
-            player.speed = 7.2 + (stage * 0.3);
-            player.jumpPower = -17 - (stage * 0.2);
-            buildStage(stage);
-            score = 0;
-        }
-
         document.getElementById('btnExitGame').addEventListener('click', () => {
-            gameState = 'MENU';
+            battleState.active = false;
             document.getElementById('gameHud').classList.add('hidden');
+            if (document.getElementById('battleHotbar')) document.getElementById('battleHotbar').remove();
+            battleSelectScreen.classList.add('hidden');
             mainMenu.classList.remove('hidden');
-            closeAllScreens();
         });
 
-        function updatePlatformer() {
-            if (gameState !== 'PLAYING') return;
-
-            if (keys['KeyA'] || keys['ArrowLeft']) {
-                player.vx = -player.speed;
-                player.direction = -1;
-            } else if (keys['KeyD'] || keys['ArrowRight']) {
-                player.vx = player.speed;
-                player.direction = 1;
-            } else {
-                player.vx = 0;
+        window.addEventListener('pointerdown', (event) => {
+            const rect = document.getElementById('gameCanvas').getBoundingClientRect();
+            battleState.mouse.x = event.clientX - rect.left;
+            battleState.mouse.y = event.clientY - rect.top;
+            if (battleState.active) {
+                spawnProjectileFromPlayer();
             }
+        });
 
-            if ((keys['KeyW'] || keys['Space'] || keys['ArrowUp']) && player.grounded) {
-                player.vy = player.jumpPower;
-                player.grounded = false;
+        window.addEventListener('keydown', (event) => {
+            if (event.key === 'a' || event.key === 'A' || event.key === 'ArrowLeft') battleState.keys.left = true;
+            if (event.key === 'd' || event.key === 'D' || event.key === 'ArrowRight') battleState.keys.right = true;
+            if (event.key === 'w' || event.key === 'W' || event.key === 'ArrowUp' || event.key === ' ') {
+                battleState.keys.jump = true;
             }
-
-            if (keys['KeyJ']) triggerAttack();
-
-            player.vy += 0.65;
-            player.x += player.vx;
-            player.y += player.vy;
-
-            player.grounded = false;
-            platforms.forEach(p => {
-                if (player.x < p.x + p.w && player.x + player.w > p.x &&
-                    player.y + player.h > p.y && player.y + player.h < p.y + p.h + player.vy) {
-                    player.y = p.y - player.h;
-                    player.vy = 0;
-                    player.grounded = true;
-                }
-            });
-
-            if (player.x < 0) player.x = 0;
-            if (player.x + player.w > width) player.x = width - player.w;
-            if (player.y > height + 100) {
-                player.health = 0;
-            }
-
-            if (player.attackTimer > 0) player.attackTimer--;
-            else player.attacking = false;
-
-            projectiles.forEach((proj, idx) => {
-                proj.x += proj.vx;
-                proj.y += proj.vy;
-                proj.vy += 0.1;
-
-                enemies.forEach(enemy => {
-                    if (Math.abs(proj.x - enemy.x) < 18 && Math.abs(proj.y - enemy.y) < 18) {
-                        enemy.hp -= proj.damage;
-                        projectiles.splice(idx, 1);
-                    }
-                });
-
-                if (proj.x < 0 || proj.x > width || proj.y > height) {
-                    projectiles.splice(idx, 1);
-                }
-            });
-
-            enemies.forEach((enemy, idx) => {
-                enemy.x += enemy.vx;
-                if (enemy.x < enemy.minX || enemy.x > enemy.maxX) enemy.vx *= -1;
-
-                if (Math.abs(player.x - enemy.x) < 34 && Math.abs(player.y - enemy.y) < 34) {
-                    player.health -= 0.8;
-                    if (player.health <= 0) {
-                        player.health = 100;
-                        player.x = 100;
-                        player.y = 100;
-                        showToast('You were knocked down. Stage reset.', 'warn');
+            if (battleState.active) {
+                const key = event.key;
+                if (key === '1' || key === '2' || key === '3') {
+                    const slot = Number(key);
+                    const item = playerProfile.equipped[`Weapon ${slot}`];
+                    if (item) {
+                        setSelectedWeaponSlot(slot);
                     }
                 }
-
-                if (enemy.hp <= 0) {
-                    enemies.splice(idx, 1);
-                    score += 100;
-                    playerProfile.balance += 25;
-                    saveProfile();
-                }
-            });
-
-            if (enemies.length === 0) {
-                const nextStage = currentStage + 1;
-                showToast(`Stage ${currentStage} clear!`, 'success');
-                currentStage = nextStage;
-                if (nextStage > 4) {
-                    currentStage = 4;
-                }
-                buildStage(currentStage);
             }
+        });
 
-            document.getElementById('healthBar').style.width = `${Math.max(0, player.health)}%`;
-            document.getElementById('hudGold').innerText = `${playerProfile.balance} C`;
-            document.getElementById('hudScore').innerText = score;
+        window.addEventListener('keyup', (event) => {
+            if (event.key === 'a' || event.key === 'A' || event.key === 'ArrowLeft') battleState.keys.left = false;
+            if (event.key === 'd' || event.key === 'D' || event.key === 'ArrowRight') battleState.keys.right = false;
+            if (event.key === 'w' || event.key === 'W' || event.key === 'ArrowUp' || event.key === ' ') battleState.keys.jump = false;
+        });
+
+        requestAnimationFrame(animationLoop);
+
+        function buildDemoData() {
+            playerProfile.inventory = [
+                buildWeapon('Nova Blade', 'Common', 1, 20, 0.65, 'slash'),
+                buildWeapon('Pulse Rifle', 'Common', 1, 25, 0.8, 'straight'),
+                buildWeapon('Gravity Cannon', 'Common', 1, 30, 1.1, 'gravity'),
+                normalizeItem({ id: 'demo_torso', name: 'Aegis Plate', category: 'torso', type: 'Torso', rarity: 'Common', level: 1, xp: 0, health: 100, speed: 0.05, tags: ['torso', 'guard', 'steel'] }),
+                normalizeItem({ id: 'demo_mod1', name: 'Pulse Core', category: 'module', type: 'Module 1', rarity: 'Common', level: 1, xp: 0, damageBoostPct: 0.05, healthBoostPct: 0.05, tags: ['module', 'boost', 'tech'] }),
+                normalizeItem({ id: 'demo_mod2', name: 'Flux Talisman', category: 'module', type: 'Module 2', rarity: 'Common', level: 1, xp: 0, damageBoostPct: 0.08, healthBoostPct: 0.04, tags: ['module', 'boost', 'arcane'] })
+            ];
+            playerProfile.equipped['Weapon 1'] = normalizeItem(playerProfile.inventory[0]);
+            playerProfile.equipped['Weapon 2'] = normalizeItem(playerProfile.inventory[1]);
+            playerProfile.equipped['Weapon 3'] = normalizeItem(playerProfile.inventory[2]);
+            playerProfile.equipped['Torso'] = normalizeItem(playerProfile.inventory[3]);
+            playerProfile.equipped['Module 1'] = normalizeItem(playerProfile.inventory[4]);
+            playerProfile.equipped['Module 2'] = normalizeItem(playerProfile.inventory[5]);
+            playerProfile.inventory = [];
+            updateUI();
         }
 
-        function renderBackground() {
-            ctx.clearRect(0, 0, width, height);
-            ctx.fillStyle = '#06060c';
-            ctx.fillRect(0, 0, width, height);
-
-            if (gameState === 'MENU') {
-                ctx.fillStyle = 'rgba(0, 243, 255, 0.1)';
-                for (let i = 0; i < 30; i++) {
-                    ctx.fillRect((i * 27) % width, (i * 43) % height, 2, 2);
-                }
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-                for (let i = 0; i < 12; i++) {
-                    ctx.fillRect((i * 120) + 30, height - 60 - (i % 3) * 18, 80, 2);
-                }
-            }
-        }
-
-        function drawPlatforms() {
-            platforms.forEach(p => {
-                ctx.fillStyle = '#132238';
-                ctx.fillRect(p.x, p.y, p.w, p.h);
-                ctx.fillStyle = '#00f3ff';
-                ctx.fillRect(p.x, p.y, p.w, 4);
-            });
-        }
-
-        function drawPlayer() {
-            ctx.fillStyle = '#38bdf8';
-            ctx.fillRect(player.x, player.y, player.w, player.h);
-            ctx.fillStyle = '#fff';
-            ctx.fillRect(player.x + (player.direction > 0 ? player.w - 4 : 0), player.y + 6, 4, 8);
-        }
-
-        function drawEnemies() {
-            enemies.forEach(enemy => {
-                ctx.fillStyle = enemy.color || '#f87171';
-                ctx.fillRect(enemy.x, enemy.y, enemy.w, enemy.h);
-                ctx.fillStyle = 'rgba(0,0,0,0.5)';
-                ctx.fillRect(enemy.x, enemy.y - 8, enemy.w, 4);
-                ctx.fillStyle = '#22c55e';
-                ctx.fillRect(enemy.x, enemy.y - 8, (enemy.hp / (30 + currentStage * 10)) * enemy.w, 4);
-            });
-        }
-
-        function drawProjectiles() {
-            projectiles.forEach(proj => {
-                ctx.fillStyle = proj.color || '#f8fafc';
-                ctx.fillRect(proj.x, proj.y, proj.w, proj.h);
-            });
-        }
-
-        function render() {
-            renderBackground();
-            if (gameState === 'PLAYING') {
-                drawPlatforms();
-                drawProjectiles();
-                drawEnemies();
-                drawPlayer();
-            }
-            requestAnimationFrame(render);
-        }
-
-        function gameLoop() {
-            updatePlatformer();
-            requestAnimationFrame(gameLoop);
-        }
-
-        render();
-        gameLoop();
+        buildDemoData();
+        updateUI();
+        listenToMarket();
+        refreshBattleHotbar();
     </script>
 </body>
 </html>
