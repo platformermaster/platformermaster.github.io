@@ -92,22 +92,23 @@
 
             <!-- Descriptive Instructions -->
             <div class="bg-cyan-950/40 border border-cyan-500/30 rounded-xl p-3 text-xs text-slate-300 mb-5 leading-relaxed">
-                <p class="font-bold text-cyan-300 mb-1"><i class="fa-solid fa-circle-info mr-1"></i> How to Connect:</p>
+                <p class="font-bold text-cyan-300 mb-1"><i class="fa-solid fa-circle-info mr-1"></i> Authentication & Persistence Guide:</p>
                 <ol class="list-decimal list-inside space-y-1 text-slate-400">
-                    <li>Select <strong class="text-white">Log In</strong> if you already registered, or <strong class="text-white">New Player</strong> to create an account.</li>
-                    <li>Enter a valid email address and password (at least 6 characters).</li>
-                    <li>For new players, enter your preferred In-Game Username.</li>
+                    <li>Toggle between <strong class="text-white">Log In</strong> and <strong class="text-white">New Player</strong> below.</li>
+                    <li>Enter a valid email address and password (minimum 6 characters).</li>
+                    <li>Realtime database automatically synchronizes coins, loadouts, and marketplace listings.</li>
+                    <li>Offline mode is supported automatically if cloud connection fails.</li>
                 </ol>
             </div>
 
             <!-- Auth Tabs -->
             <div class="flex border-b border-slate-800 mb-5">
-                <button id="tabLogin" class="flex-1 py-2 font-orbitron font-bold text-sm text-cyan-400 border-b-2 border-cyan-400">LOG IN</button>
-                <button id="tabRegister" class="flex-1 py-2 font-orbitron font-bold text-sm text-slate-500 border-b-2 border-transparent">NEW PLAYER</button>
+                <button id="tabLogin" type="button" class="flex-1 py-2 font-orbitron font-bold text-sm text-cyan-400 border-b-2 border-cyan-400 transition-colors">LOG IN</button>
+                <button id="tabRegister" type="button" class="flex-1 py-2 font-orbitron font-bold text-sm text-slate-500 border-b-2 border-transparent transition-colors">NEW PLAYER</button>
             </div>
 
-            <!-- Error Banner -->
-            <div id="authError" class="hidden mb-4 p-2.5 bg-rose-950/80 border border-rose-500/50 rounded-lg text-rose-300 text-xs"></div>
+            <!-- Status Banner -->
+            <div id="authStatus" class="hidden mb-4 p-2.5 rounded-lg text-xs"></div>
 
             <!-- Form -->
             <form id="authForm" class="space-y-4">
@@ -128,6 +129,10 @@
 
                 <button type="submit" id="authSubmitBtn" class="btn-neon w-full py-3 rounded-xl font-orbitron font-bold text-sm text-cyan-300 mt-2">
                     LOG IN
+                </button>
+                
+                <button type="button" id="btnOfflineGuest" class="w-full py-2 bg-slate-900 hover:bg-slate-800 border border-slate-700 rounded-xl font-orbitron text-xs text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-user-ninja mr-1"></i> PLAY AS GUEST (OFFLINE MODE)
                 </button>
             </form>
         </div>
@@ -178,7 +183,6 @@
             <div class="glass-panel rounded-2xl p-6 flex flex-col justify-between">
                 <h3 class="font-orbitron font-bold text-slate-300 border-b border-slate-800 pb-2 mb-4">EQUIPPED LOADOUT</h3>
                 <div id="workshopSlots" class="grid grid-cols-2 gap-4 flex-1">
-                    <!-- 6 Selective Slots -->
                     <div class="equip-slot rounded-xl p-3 flex flex-col justify-between" data-slot="Torso">
                         <div class="text-xs font-mono text-cyan-400 uppercase font-bold"><i class="fa-solid fa-shirt mr-1"></i> Torso</div>
                         <div class="slot-content text-center py-2 text-xs text-slate-500">Empty</div>
@@ -195,8 +199,8 @@
                         <div class="text-xs font-mono text-cyan-400 uppercase font-bold"><i class="fa-solid fa-crosshairs mr-1"></i> Weapon 3</div>
                         <div class="slot-content text-center py-2 text-xs text-slate-500">Empty</div>
                     </div>
-                    <div class="equip-slot rounded-xl p-3 flex flex-col justify-between" data-slot="Special">
-                        <div class="text-xs font-mono text-pink-400 uppercase font-bold"><i class="fa-solid fa-bolt mr-1"></i> Special</div>
+                    <div class="equip-slot rounded-xl p-3 flex flex-col justify-between" data-slot="Special 1">
+                        <div class="text-xs font-mono text-pink-400 uppercase font-bold"><i class="fa-solid fa-bolt mr-1"></i> Special 1</div>
                         <div class="slot-content text-center py-2 text-xs text-slate-500">Empty</div>
                     </div>
                     <div class="equip-slot rounded-xl p-3 flex flex-col justify-between" data-slot="Special 2">
@@ -210,7 +214,7 @@
             <div class="glass-panel rounded-2xl p-6 flex flex-col overflow-hidden">
                 <h3 class="font-orbitron font-bold text-slate-300 border-b border-slate-800 pb-2 mb-4 flex justify-between items-center">
                     <span>INVENTORY</span>
-                    <span id="goldDisplayWorkshop" class="text-yellow-400 text-sm font-mono"><i class="fa-solid fa-coins"></i> 0 Gold</span>
+                    <span id="goldDisplayWorkshop" class="text-yellow-400 text-sm font-mono"><i class="fa-solid fa-coins"></i> 0 Coins</span>
                 </h3>
                 <div id="inventoryContainer" class="grid grid-cols-2 sm:grid-cols-3 gap-3 overflow-y-auto pr-1 flex-1">
                     <!-- Rendered Inventory Items -->
@@ -228,7 +232,6 @@
             <button class="closeScreenBtn text-slate-400 hover:text-white text-2xl"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
-        <!-- Store Sub-Tabs -->
         <div class="flex gap-4 my-4">
             <button id="tabMarket" class="px-4 py-2 rounded-lg font-orbitron font-bold text-sm bg-cyan-950 text-cyan-300 border border-cyan-500/40">PLAYER MARKET</button>
             <button id="tabChest" class="px-4 py-2 rounded-lg font-orbitron font-bold text-sm bg-slate-900 text-slate-400 border border-slate-800">MYSTERY CHEST</button>
@@ -237,11 +240,11 @@
         <!-- Market View -->
         <div id="marketView" class="flex-1 flex flex-col overflow-hidden">
             <div class="flex justify-between items-center mb-3">
-                <span class="text-xs text-slate-400 font-mono">Live Firebase Player Marketplace</span>
+                <span class="text-xs text-slate-400 font-mono">Live Player Marketplace</span>
                 <button id="btnListItem" class="btn-neon px-3 py-1.5 rounded-lg text-xs font-orbitron text-cyan-300">+ List Item for Sale</button>
             </div>
             <div id="marketListings" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto flex-1 pr-1">
-                <!-- Live Listings rendered via JS -->
+                <!-- Live Listings -->
             </div>
         </div>
 
@@ -250,10 +253,10 @@
             <div class="glass-panel p-8 rounded-2xl max-w-sm text-center border border-yellow-500/30">
                 <i class="fa-solid fa-box-open text-6xl text-yellow-400 mb-4 animate-bounce"></i>
                 <h3 class="text-xl font-orbitron font-bold text-white mb-2">LOOT CHEST</h3>
-                <p class="text-xs text-slate-400 mb-6">Contains a random Torso, Weapon, or Special Item with randomized stats!</p>
-                <div class="text-lg font-bold text-yellow-400 font-mono mb-4">Cost: 100 Gold</div>
+                <p class="text-xs text-slate-400 mb-6">Contains a random Torso, Weapon, or Special Item with randomized power stats!</p>
+                <div class="text-lg font-bold text-yellow-400 font-mono mb-4">Cost: 100 Coins</div>
                 <button id="btnOpenChest" class="btn-neon w-full py-3 rounded-xl font-orbitron font-bold text-yellow-300">
-                    OPEN CHEST (100 G)
+                    OPEN CHEST (100 C)
                 </button>
             </div>
         </div>
@@ -269,7 +272,7 @@
                     <select id="listItemSelect" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white outline-none"></select>
                 </div>
                 <div>
-                    <label class="block text-xs font-mono text-slate-400 mb-1">PRICE (GOLD)</label>
+                    <label class="block text-xs font-mono text-slate-400 mb-1">PRICE (COINS)</label>
                     <input type="number" id="listItemPrice" min="1" value="50" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2 text-white outline-none">
                 </div>
             </div>
@@ -292,10 +295,10 @@
             <div class="glass-panel p-6 rounded-2xl w-full border border-amber-500/30 text-center">
                 <i class="fa-solid fa-fire-burner text-5xl text-amber-500 mb-4"></i>
                 <h3 class="font-orbitron font-bold text-lg mb-2">UPGRADE ITEM POWER</h3>
-                <p class="text-xs text-slate-400 mb-4">Enhance an inventory item's stats by +10 for 50 Gold.</p>
+                <p class="text-xs text-slate-400 mb-4">Enhance an inventory item's power by +10 for 50 Coins.</p>
                 <select id="forgeSelect" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-white outline-none mb-4 text-sm"></select>
                 <button id="btnForgeUpgrade" class="btn-neon w-full py-3 rounded-xl font-orbitron font-bold text-amber-400">
-                    FORGE UPGRADE (50 G)
+                    FORGE UPGRADE (50 C)
                 </button>
             </div>
         </div>
@@ -320,7 +323,7 @@
             </div>
             <div class="glass-panel p-4 rounded-xl">
                 <h4 class="font-orbitron font-bold text-cyan-300 mb-2">WORKSHOP & MARKET MECHANICS</h4>
-                <p class="text-xs text-slate-400">Equip items into your 6 loadout slots in the Workshop to boost your combat stats. Trade items live on the Firebase market with other real players or acquire mystery loot chests!</p>
+                <p class="text-xs text-slate-400">Equip items into your 6 loadout slots in the Workshop to boost your combat stats. Defeated enemies drop coins that directly sync to your profile!</p>
             </div>
         </div>
     </div>
@@ -338,9 +341,10 @@
                 <i class="fa-solid fa-user-ninja"></i>
             </div>
             <h3 id="accountUsername" class="text-xl font-orbitron font-bold text-white mb-1">---</h3>
+            <p id="accountEmail" class="text-xs text-cyan-400 font-mono mb-1">Email: ---</p>
             <p id="accountUid" class="text-[10px] font-mono text-slate-500 mb-4">UID: ---</p>
             <div class="bg-slate-900/80 p-3 rounded-xl font-mono text-yellow-400 text-sm mb-6">
-                Balance: <span id="accountBalance">0</span> Gold
+                Balance: <span id="accountBalance">0</span> Coins
             </div>
             <button id="btnLogout" class="w-full py-3 bg-rose-950 hover:bg-rose-900 border border-rose-500/50 rounded-xl font-orbitron font-bold text-rose-300 text-sm">
                 LOG OUT
@@ -359,8 +363,8 @@
                     </div>
                 </div>
                 <div>
-                    <div class="text-[10px] text-slate-400 uppercase font-mono">GOLD</div>
-                    <div id="hudGold" class="text-sm font-bold font-mono text-yellow-400">0 G</div>
+                    <div class="text-[10px] text-slate-400 uppercase font-mono">COINS</div>
+                    <div id="hudGold" class="text-sm font-bold font-mono text-yellow-400">0 C</div>
                 </div>
                 <div>
                     <div class="text-[10px] text-slate-400 uppercase font-mono">SCORE</div>
@@ -393,174 +397,235 @@
             remove 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // Firebase Configuration as provided
+        // Project Configuration
         const firebaseConfig = {
             projectId: "my-game-database-e99d8",
             databaseURL: "https://my-game-database-e99d8-default-rtdb.firebaseio.com"
         };
 
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getDatabase(app);
+        let firebaseConnected = false;
+        let app, auth, db;
 
-        /* ------------------------------------------------------------------
-           STATE MANAGEMENT
-           ------------------------------------------------------------------ */
+        try {
+            app = initializeApp(firebaseConfig);
+            auth = getAuth(app);
+            db = getDatabase(app);
+            firebaseConnected = true;
+        } catch (e) {
+            console.warn("Firebase initialization notice:", e);
+        }
+
+        /* State Management */
         let currentUser = null;
+        let isOfflineGuest = false;
+
         let playerProfile = {
             username: 'Player',
-            balance: 200,
+            email: 'offline@guest.com',
+            balance: 500,
             inventory: [
-                { id: 'item_1', name: 'Iron Sword', type: 'Weapon 1', power: 15 },
-                { id: 'item_2', name: 'Leather Vest', type: 'Torso', power: 10 }
+                { id: 'init_1', name: 'Basic Sword', type: 'Weapon 1', power: 15 },
+                { id: 'init_2', name: 'Leather Armor', type: 'Torso', power: 10 }
             ],
             equipped: {
                 'Torso': null,
                 'Weapon 1': null,
                 'Weapon 2': null,
                 'Weapon 3': null,
-                'Special': null,
+                'Special 1': null,
                 'Special 2': null
             }
         };
 
-        /* ------------------------------------------------------------------
-           WEB AUDIO SYNTHESIZER
-           ------------------------------------------------------------------ */
+        /* Sound Effects */
         class SoundEffects {
             constructor() { this.ctx = null; }
             init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
             playClick() {
-                this.init();
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'sine';
-                osc.frequency.setValueAtTime(400, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.05);
-                gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
-                osc.connect(gain); gain.connect(this.ctx.destination);
-                osc.start(); osc.stop(this.ctx.currentTime + 0.05);
+                try {
+                    this.init();
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(400, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.05);
+                    gain.gain.setValueAtTime(0.05, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.05);
+                    osc.connect(gain); gain.connect(this.ctx.destination);
+                    osc.start(); osc.stop(this.ctx.currentTime + 0.05);
+                } catch(e) {}
             }
             playHit() {
-                this.init();
-                const osc = this.ctx.createOscillator();
-                const gain = this.ctx.createGain();
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(150, this.ctx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
-                osc.connect(gain); gain.connect(this.ctx.destination);
-                osc.start(); osc.stop(this.ctx.currentTime + 0.1);
+                try {
+                    this.init();
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(30, this.ctx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+                    osc.connect(gain); gain.connect(this.ctx.destination);
+                    osc.start(); osc.stop(this.ctx.currentTime + 0.1);
+                } catch(e) {}
             }
         }
         const sfx = new SoundEffects();
 
-        /* ------------------------------------------------------------------
-           AUTH & DATABASE SYNC
-           ------------------------------------------------------------------ */
+        /* Authentication & Mode Switching */
         const authScreen = document.getElementById('authScreen');
         const mainMenu = document.getElementById('mainMenu');
-        const authError = document.getElementById('authError');
+        const authStatus = document.getElementById('authStatus');
         const tabLogin = document.getElementById('tabLogin');
         const tabRegister = document.getElementById('tabRegister');
         const usernameGroup = document.getElementById('usernameFieldGroup');
         const authSubmitBtn = document.getElementById('authSubmitBtn');
         let isRegistering = false;
 
+        function showStatus(msg, isError = true) {
+            authStatus.classList.remove('hidden', 'bg-rose-950/80', 'border-rose-500/50', 'text-rose-300', 'bg-emerald-950/80', 'border-emerald-500/50', 'text-emerald-300');
+            if (isError) {
+                authStatus.classList.add('bg-rose-950/80', 'border', 'border-rose-500/50', 'text-rose-300');
+            } else {
+                authStatus.classList.add('bg-emerald-950/80', 'border', 'border-emerald-500/50', 'text-emerald-300');
+            }
+            authStatus.innerText = msg;
+        }
+
         tabLogin.addEventListener('click', () => {
+            sfx.playClick();
             isRegistering = false;
-            tabLogin.className = "flex-1 py-2 font-orbitron font-bold text-sm text-cyan-400 border-b-2 border-cyan-400";
-            tabRegister.className = "flex-1 py-2 font-orbitron font-bold text-sm text-slate-500 border-b-2 border-transparent";
+            tabLogin.className = "flex-1 py-2 font-orbitron font-bold text-sm text-cyan-400 border-b-2 border-cyan-400 transition-colors";
+            tabRegister.className = "flex-1 py-2 font-orbitron font-bold text-sm text-slate-500 border-b-2 border-transparent transition-colors";
             usernameGroup.classList.add('hidden');
             authSubmitBtn.innerText = "LOG IN";
-            authError.classList.add('hidden');
+            authStatus.classList.add('hidden');
         });
 
         tabRegister.addEventListener('click', () => {
+            sfx.playClick();
             isRegistering = true;
-            tabRegister.className = "flex-1 py-2 font-orbitron font-bold text-sm text-cyan-400 border-b-2 border-cyan-400";
-            tabLogin.className = "flex-1 py-2 font-orbitron font-bold text-sm text-slate-500 border-b-2 border-transparent";
+            tabRegister.className = "flex-1 py-2 font-orbitron font-bold text-sm text-cyan-400 border-b-2 border-cyan-400 transition-colors";
+            tabLogin.className = "flex-1 py-2 font-orbitron font-bold text-sm text-slate-500 border-b-2 border-transparent transition-colors";
             usernameGroup.classList.remove('hidden');
             authSubmitBtn.innerText = "CREATE ACCOUNT";
-            authError.classList.add('hidden');
+            authStatus.classList.add('hidden');
         });
 
         document.getElementById('authForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             sfx.playClick();
-            const email = document.getElementById('authEmail').value;
+            const email = document.getElementById('authEmail').value.trim();
             const password = document.getElementById('authPassword').value;
-            const username = document.getElementById('authUsername').value || 'NeonRider';
+            const username = document.getElementById('authUsername').value.trim() || 'NeonRider';
 
-            authError.classList.add('hidden');
+            if (!firebaseConnected) {
+                showStatus("Firebase client not configured. Proceeding in offline mode.");
+                startGuestMode(username, email);
+                return;
+            }
 
             try {
                 if (isRegistering) {
+                    showStatus("Creating account...", false);
                     const userCred = await createUserWithEmailAndPassword(auth, email, password);
-                    // Initialize New Profile in Database
                     const initialProfile = {
                         username: username,
-                        balance: 250,
+                        email: email,
+                        balance: 500,
                         inventory: [
-                            { id: 'init_1', name: 'Starter Blade', type: 'Weapon 1', power: 10 },
-                            { id: 'init_2', name: 'Neon Vest', type: 'Torso', power: 5 }
+                            { id: 'init_1', name: 'Basic Sword', type: 'Weapon 1', power: 15 },
+                            { id: 'init_2', name: 'Leather Armor', type: 'Torso', power: 10 }
                         ],
                         equipped: {
                             'Torso': null, 'Weapon 1': null, 'Weapon 2': null,
-                            'Weapon 3': null, 'Special': null, 'Special 2': null
+                            'Weapon 3': null, 'Special 1': null, 'Special 2': null
                         }
                     };
                     await set(ref(db, `players/${userCred.user.uid}`), initialProfile);
+                    showStatus("Account created successfully!", false);
                 } else {
+                    showStatus("Signing in...", false);
                     await signInWithEmailAndPassword(auth, email, password);
                 }
             } catch (err) {
-                authError.innerText = err.message.replace('Firebase:', '');
-                authError.classList.remove('hidden');
+                let msg = err.message || 'Authentication error';
+                if (msg.includes('auth/invalid-credential') || msg.includes('auth/user-not-found') || msg.includes('auth/wrong-password')) {
+                    msg = "Invalid email or password.";
+                } else if (msg.includes('auth/email-already-in-use')) {
+                    msg = "Email address is already registered.";
+                } else if (msg.includes('auth/weak-password')) {
+                    msg = "Password should be at least 6 characters.";
+                } else if (msg.includes('auth/invalid-email')) {
+                    msg = "Please enter a valid email address.";
+                }
+                showStatus(msg, true);
             }
         });
 
-        // Auth Listener
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-                authScreen.classList.add('hidden');
-                mainMenu.classList.remove('hidden');
-                
-                // Realtime sync player profile
-                onValue(ref(db, `players/${user.uid}`), (snapshot) => {
-                    const data = snapshot.val();
-                    if (data) {
-                        playerProfile = data;
-                        if (!playerProfile.inventory) playerProfile.inventory = [];
-                        if (!playerProfile.equipped) playerProfile.equipped = {};
-                        updateUI();
-                    }
-                });
-
-                listenToMarket();
-            } else {
-                currentUser = null;
-                authScreen.classList.remove('hidden');
-                mainMenu.classList.add('hidden');
-            }
+        document.getElementById('btnOfflineGuest').addEventListener('click', () => {
+            sfx.playClick();
+            startGuestMode('Guest Player', 'guest@neonhorizon.local');
         });
+
+        function startGuestMode(name, email) {
+            isOfflineGuest = true;
+            currentUser = { uid: 'guest_' + Date.now(), email: email };
+            playerProfile.username = name;
+            playerProfile.email = email;
+            authScreen.classList.add('hidden');
+            mainMenu.classList.remove('hidden');
+            updateUI();
+        }
+
+        if (firebaseConnected) {
+            onAuthStateChanged(auth, (user) => {
+                if (user && !isOfflineGuest) {
+                    currentUser = user;
+                    authScreen.classList.add('hidden');
+                    mainMenu.classList.remove('hidden');
+
+                    onValue(ref(db, `players/${user.uid}`), (snapshot) => {
+                        const data = snapshot.val();
+                        if (data) {
+                            playerProfile = data;
+                            if (!playerProfile.inventory) playerProfile.inventory = [];
+                            if (!playerProfile.equipped) playerProfile.equipped = {};
+                            updateUI();
+                        }
+                    });
+
+                    listenToMarket();
+                } else if (!isOfflineGuest) {
+                    currentUser = null;
+                    authScreen.classList.remove('hidden');
+                    mainMenu.classList.add('hidden');
+                }
+            });
+        }
 
         document.getElementById('btnLogout').addEventListener('click', () => {
-            signOut(auth);
+            sfx.playClick();
+            if (firebaseConnected && auth && !isOfflineGuest) {
+                signOut(auth);
+            }
+            isOfflineGuest = false;
+            currentUser = null;
             closeAllScreens();
+            authScreen.classList.remove('hidden');
+            mainMenu.classList.add('hidden');
         });
 
         function saveProfile() {
-            if (currentUser) {
+            if (firebaseConnected && currentUser && !isOfflineGuest) {
                 set(ref(db, `players/${currentUser.uid}`), playerProfile);
+            } else {
+                updateUI();
             }
         }
 
         /* ------------------------------------------------------------------
-           STREAMING_CHUNK:UI updates and screen toggle handlers...
+           STREAMING_CHUNK:UI Rendering & Workshop Equip Management...
            ------------------------------------------------------------------ */
         const screens = {
             workshop: document.getElementById('workshopScreen'),
@@ -585,22 +650,22 @@
         document.getElementById('btnAccount').addEventListener('click', () => { sfx.playClick(); closeAllScreens(); screens.account.classList.remove('hidden'); });
 
         function updateUI() {
-            // Update Account info
             document.getElementById('accountUsername').innerText = playerProfile.username;
-            document.getElementById('accountUid').innerText = `UID: ${currentUser ? currentUser.uid : 'N/A'}`;
+            document.getElementById('accountEmail').innerText = `Email: ${playerProfile.email || 'N/A'}`;
+            document.getElementById('accountUid').innerText = `UID: ${currentUser ? currentUser.uid : 'Offline'}`;
             document.getElementById('accountBalance').innerText = playerProfile.balance;
-            document.getElementById('goldDisplayWorkshop').innerHTML = `<i class="fa-solid fa-coins"></i> ${playerProfile.balance} Gold`;
+            document.getElementById('goldDisplayWorkshop').innerHTML = `<i class="fa-solid fa-coins"></i> ${playerProfile.balance} Coins`;
 
-            // Render Workshop Loadout Slots
+            // Render Workshop Slots
             const slotEls = document.querySelectorAll('#workshopSlots .equip-slot');
             slotEls.forEach(slotEl => {
                 const type = slotEl.dataset.slot;
-                const item = playerProfile.equipped[type];
+                const item = playerProfile.equipped ? playerProfile.equipped[type] : null;
                 const contentEl = slotEl.querySelector('.slot-content');
                 if (item) {
                     slotEl.classList.add('filled');
                     contentEl.innerHTML = `
-                        <div class="font-bold text-white text-xs">${item.name}</div>
+                        <div class="font-bold text-white text-xs truncate">${item.name}</div>
                         <div class="text-[10px] text-cyan-300">+${item.power} Power</div>
                         <button class="unequipBtn text-[10px] text-rose-400 mt-1 hover:underline" data-type="${type}">Unequip</button>
                     `;
@@ -610,9 +675,8 @@
                 }
             });
 
-            // Unequip Listener
             document.querySelectorAll('.unequipBtn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
+                btn.onclick = (e) => {
                     const type = e.target.dataset.type;
                     const item = playerProfile.equipped[type];
                     if (item) {
@@ -620,13 +684,13 @@
                         playerProfile.equipped[type] = null;
                         saveProfile();
                     }
-                });
+                };
             });
 
             // Render Inventory
             const invContainer = document.getElementById('inventoryContainer');
             invContainer.innerHTML = '';
-            playerProfile.inventory.forEach((item, idx) => {
+            (playerProfile.inventory || []).forEach((item, idx) => {
                 const div = document.createElement('div');
                 div.className = "bg-slate-900 border border-slate-700 hover:border-cyan-400 p-2.5 rounded-xl flex flex-col justify-between text-xs";
                 div.innerHTML = `
@@ -642,14 +706,12 @@
                 invContainer.appendChild(div);
             });
 
-            // Equip Listener
             document.querySelectorAll('.equipBtn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
+                btn.onclick = (e) => {
                     const idx = parseInt(e.target.dataset.idx);
                     const item = playerProfile.inventory[idx];
                     if (item) {
                         const targetSlot = item.type;
-                        // If already equipped, swap back
                         if (playerProfile.equipped[targetSlot]) {
                             playerProfile.inventory.push(playerProfile.equipped[targetSlot]);
                         }
@@ -657,23 +719,21 @@
                         playerProfile.inventory.splice(idx, 1);
                         saveProfile();
                     }
-                });
+                };
             });
 
-            // Populate Select Options for Listing and Forge
+            // Populate Select Options
             const listItemSelect = document.getElementById('listItemSelect');
             const forgeSelect = document.getElementById('forgeSelect');
             listItemSelect.innerHTML = '';
             forgeSelect.innerHTML = '';
-            playerProfile.inventory.forEach((item, idx) => {
+            (playerProfile.inventory || []).forEach((item, idx) => {
                 listItemSelect.innerHTML += `<option value="${idx}">${item.name} (+${item.power})</option>`;
                 forgeSelect.innerHTML += `<option value="${idx}">${item.name} (+${item.power})</option>`;
             });
         }
 
-        /* ------------------------------------------------------------------
-           MARKETPLACE & TRANSACTIONS
-           ------------------------------------------------------------------ */
+        /* Market & Store logic */
         const tabMarket = document.getElementById('tabMarket');
         const tabChest = document.getElementById('tabChest');
         const marketView = document.getElementById('marketView');
@@ -693,7 +753,6 @@
             marketView.classList.add('hidden');
         });
 
-        // Modal List Item
         const listItemModal = document.getElementById('listItemModal');
         document.getElementById('btnListItem').addEventListener('click', () => listItemModal.classList.remove('hidden'));
         document.getElementById('cancelListBtn').addEventListener('click', () => listItemModal.classList.add('hidden'));
@@ -701,26 +760,28 @@
         document.getElementById('confirmListBtn').addEventListener('click', async () => {
             const idx = parseInt(document.getElementById('listItemSelect').value);
             const price = parseInt(document.getElementById('listItemPrice').value);
-            if (isNaN(idx) || playerProfile.inventory.length === 0) return;
+            if (isNaN(idx) || !playerProfile.inventory || playerProfile.inventory.length === 0) return;
 
             const itemToList = playerProfile.inventory[idx];
             playerProfile.inventory.splice(idx, 1);
             saveProfile();
 
-            const newListingRef = push(ref(db, 'market'));
-            await set(newListingRef, {
-                listingId: newListingRef.key,
-                sellerId: currentUser.uid,
-                sellerName: playerProfile.username,
-                itemName: itemToList.name,
-                item: itemToList,
-                price: price
-            });
-
+            if (firebaseConnected && currentUser && !isOfflineGuest) {
+                const newListingRef = push(ref(db, 'market'));
+                await set(newListingRef, {
+                    listingId: newListingRef.key,
+                    sellerId: currentUser.uid,
+                    sellerName: playerProfile.username,
+                    itemName: itemToList.name,
+                    item: itemToList,
+                    price: price
+                });
+            }
             listItemModal.classList.add('hidden');
         });
 
         function listenToMarket() {
+            if (!firebaseConnected || isOfflineGuest) return;
             onValue(ref(db, 'market'), (snapshot) => {
                 const data = snapshot.val();
                 const container = document.getElementById('marketListings');
@@ -740,8 +801,8 @@
                             <div class="text-[10px] text-cyan-400 font-mono mt-1">+${listing.item.power} Power (${listing.item.type})</div>
                         </div>
                         <div class="flex items-center justify-between mt-3 pt-2 border-t border-slate-800">
-                            <span class="text-xs font-bold text-yellow-400 font-mono">${listing.price} G</span>
-                            ${listing.sellerId === currentUser.uid ? 
+                            <span class="text-xs font-bold text-yellow-400 font-mono">${listing.price} C</span>
+                            ${listing.sellerId === (currentUser ? currentUser.uid : '') ? 
                                 `<span class="text-[10px] text-slate-500 font-mono">Your Listing</span>` : 
                                 `<button class="buyBtn px-3 py-1 bg-yellow-500/20 hover:bg-yellow-500/30 border border-yellow-500/50 text-yellow-300 rounded text-xs font-orbitron" data-id="${listing.listingId}">BUY</button>`
                             }
@@ -751,21 +812,20 @@
                 });
 
                 document.querySelectorAll('.buyBtn').forEach(btn => {
-                    btn.addEventListener('click', (e) => executePurchase(e.target.dataset.id));
+                    btn.onclick = (e) => executePurchase(e.target.dataset.id);
                 });
             });
         }
 
-        // Buy Transaction Function
         async function executePurchase(listingId) {
+            if (!firebaseConnected || isOfflineGuest) return;
             const listingRef = ref(db, `market/${listingId}`);
             const snapshot = await get(listingRef);
             if (!snapshot.exists()) return alert("Listing no longer exists!");
 
             const listing = snapshot.val();
-            if (playerProfile.balance < listing.price) return alert("Insufficient Gold!");
+            if (playerProfile.balance < listing.price) return alert("Insufficient Coins!");
 
-            // Run transaction on seller profile to credit gold
             const sellerRef = ref(db, `players/${listing.sellerId}`);
             await runTransaction(sellerRef, (sellerData) => {
                 if (sellerData) {
@@ -774,21 +834,19 @@
                 return sellerData;
             });
 
-            // Deduct buyer gold & add item
             playerProfile.balance -= listing.price;
             playerProfile.inventory.push(listing.item);
             saveProfile();
 
-            // Remove market listing
             await remove(listingRef);
         }
 
-        // Mystery Chest Purchase
+        // Open Chest
         document.getElementById('btnOpenChest').addEventListener('click', () => {
-            if (playerProfile.balance < 100) return alert("Requires 100 Gold!");
+            if (playerProfile.balance < 100) return alert("Requires 100 Coins!");
             playerProfile.balance -= 100;
 
-            const types = ['Torso', 'Weapon 1', 'Weapon 2', 'Weapon 3', 'Special', 'Special 2'];
+            const types = ['Torso', 'Weapon 1', 'Weapon 2', 'Weapon 3', 'Special 1', 'Special 2'];
             const randomType = types[Math.floor(Math.random() * types.length)];
             const randomPower = Math.floor(Math.random() * 25) + 10;
             const newItem = {
@@ -803,11 +861,11 @@
             alert(`Chest Opened! Received: ${newItem.name} (+${newItem.power} Power)`);
         });
 
-        // Blacksmith Upgrade
+        // Forge Upgrade
         document.getElementById('btnForgeUpgrade').addEventListener('click', () => {
             const idx = parseInt(document.getElementById('forgeSelect').value);
-            if (isNaN(idx) || playerProfile.inventory.length === 0) return;
-            if (playerProfile.balance < 50) return alert("Upgrade requires 50 Gold!");
+            if (isNaN(idx) || !playerProfile.inventory || playerProfile.inventory.length === 0) return;
+            if (playerProfile.balance < 50) return alert("Upgrade requires 50 Coins!");
 
             playerProfile.balance -= 50;
             playerProfile.inventory[idx].power += 10;
@@ -832,23 +890,12 @@
         let score = 0;
         let keys = {};
 
-        // Platformer Player Object
         const player = {
-            x: 100,
-            y: 300,
-            w: 24,
-            h: 36,
-            vx: 0,
-            vy: 0,
-            speed: 5,
-            jumpPower: -12,
-            grounded: false,
-            health: 100,
-            attacking: false,
-            attackTimer: 0
+            x: 100, y: 300, w: 24, h: 36,
+            vx: 0, vy: 0, speed: 5, jumpPower: -12,
+            grounded: false, health: 100, attacking: false, attackTimer: 0
         };
 
-        // Platforms Level Structure
         let platforms = [];
         let enemies = [];
 
@@ -899,7 +946,6 @@
         function updatePlatformer() {
             if (gameState !== 'PLAYING') return;
 
-            // Controls
             if (keys['KeyA'] || keys['ArrowLeft']) player.vx = -player.speed;
             else if (keys['KeyD'] || keys['ArrowRight']) player.vx = player.speed;
             else player.vx = 0;
@@ -911,12 +957,10 @@
 
             if (keys['KeyJ']) triggerAttack();
 
-            // Gravity
             player.vy += 0.6;
             player.x += player.vx;
             player.y += player.vy;
 
-            // Platform Collision
             player.grounded = false;
             platforms.forEach(p => {
                 if (player.x < p.x + p.w && player.x + player.w > p.x &&
@@ -927,33 +971,30 @@
                 }
             });
 
-            // Calculate total player attack power from workshop slots
             let bonusPower = 10;
-            Object.values(playerProfile.equipped).forEach(item => {
-                if (item) bonusPower += item.power;
-            });
+            if (playerProfile.equipped) {
+                Object.values(playerProfile.equipped).forEach(item => {
+                    if (item) bonusPower += item.power;
+                });
+            }
 
-            // Attack Logic
             if (player.attackTimer > 0) player.attackTimer--;
             else player.attacking = false;
 
-            // Enemy AI & Collision
             enemies.forEach((enemy, idx) => {
                 enemy.x += enemy.vx;
                 if (enemy.x < enemy.minX || enemy.x > enemy.maxX) enemy.vx *= -1;
 
-                // Hitbox detection for attack
                 if (player.attacking && Math.abs(player.x - enemy.x) < 40 && Math.abs(player.y - enemy.y) < 40) {
                     enemy.hp -= bonusPower * 0.2;
                     if (enemy.hp <= 0) {
                         enemies.splice(idx, 1);
                         score += 100;
-                        playerProfile.balance += 25; // Gold reward
+                        playerProfile.balance += 25; // Coins drop on enemy defeat
                         saveProfile();
                     }
                 }
 
-                // Enemy touches player
                 if (Math.abs(player.x - enemy.x) < 20 && Math.abs(player.y - enemy.y) < 20) {
                     player.health -= 0.5;
                     if (player.health <= 0) {
@@ -964,19 +1005,16 @@
                 }
             });
 
-            // HUD updates
             document.getElementById('healthBar').style.width = `${player.health}%`;
-            document.getElementById('hudGold').innerText = `${playerProfile.balance} G`;
+            document.getElementById('hudGold').innerText = `${playerProfile.balance} C`;
             document.getElementById('hudScore').innerText = score;
         }
 
         function renderPlatformer() {
-            // Draw background grid
             ctx.fillStyle = '#06060c';
             ctx.fillRect(0, 0, width, height);
 
             if (gameState === 'MENU') {
-                // Background starfield
                 ctx.fillStyle = 'rgba(0, 243, 255, 0.2)';
                 for(let i=0; i<30; i++) {
                     ctx.fillRect((i*67)%width, (i*43)%height, 2, 2);
@@ -984,7 +1022,6 @@
                 return;
             }
 
-            // Draw Platforms
             ctx.fillStyle = 'rgba(0, 243, 255, 0.2)';
             ctx.strokeStyle = '#00f3ff';
             ctx.lineWidth = 2;
@@ -993,17 +1030,14 @@
                 ctx.strokeRect(p.x, p.y, p.w, p.h);
             });
 
-            // Draw Enemies
             ctx.fillStyle = '#ff007f';
             enemies.forEach(e => {
                 ctx.fillRect(e.x, e.y, e.w, e.h);
             });
 
-            // Draw Player
             ctx.fillStyle = '#10b981';
             ctx.fillRect(player.x, player.y, player.w, player.h);
 
-            // Draw Attack Effect
             if (player.attacking) {
                 ctx.fillStyle = 'rgba(255, 230, 0, 0.5)';
                 ctx.beginPath();
