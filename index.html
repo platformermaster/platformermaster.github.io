@@ -170,7 +170,6 @@
 
     <!-- WORKSHOP MODAL / SCREEN -->
     <div id="workshopScreen" class="hidden absolute inset-0 z-20 bg-slate-950/95 p-6 flex flex-col">
-        <!-- Top Bar -->
         <div class="flex items-center justify-between pb-4 border-b border-slate-800">
             <h2 class="text-2xl font-orbitron font-bold text-cyan-400 flex items-center gap-3">
                 <i class="fa-solid fa-shield-halved"></i> WORKSHOP & LOADOUT
@@ -179,7 +178,6 @@
         </div>
 
         <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-6 mt-6 overflow-hidden">
-            <!-- Left Side: 6 Selective Loadout Slots -->
             <div class="glass-panel rounded-2xl p-6 flex flex-col justify-between">
                 <h3 class="font-orbitron font-bold text-slate-300 border-b border-slate-800 pb-2 mb-4">EQUIPPED LOADOUT</h3>
                 <div id="workshopSlots" class="grid grid-cols-2 gap-4 flex-1">
@@ -210,14 +208,12 @@
                 </div>
             </div>
 
-            <!-- Right Half: Player Inventory -->
             <div class="glass-panel rounded-2xl p-6 flex flex-col overflow-hidden">
                 <h3 class="font-orbitron font-bold text-slate-300 border-b border-slate-800 pb-2 mb-4 flex justify-between items-center">
                     <span>INVENTORY</span>
                     <span id="goldDisplayWorkshop" class="text-yellow-400 text-sm font-mono"><i class="fa-solid fa-coins"></i> 0 Coins</span>
                 </h3>
                 <div id="inventoryContainer" class="grid grid-cols-2 sm:grid-cols-3 gap-3 overflow-y-auto pr-1 flex-1">
-                    <!-- Rendered Inventory Items -->
                 </div>
             </div>
         </div>
@@ -237,18 +233,15 @@
             <button id="tabChest" class="px-4 py-2 rounded-lg font-orbitron font-bold text-sm bg-slate-900 text-slate-400 border border-slate-800">MYSTERY CHEST</button>
         </div>
 
-        <!-- Market View -->
         <div id="marketView" class="flex-1 flex flex-col overflow-hidden">
             <div class="flex justify-between items-center mb-3">
                 <span class="text-xs text-slate-400 font-mono">Live Player Marketplace</span>
                 <button id="btnListItem" class="btn-neon px-3 py-1.5 rounded-lg text-xs font-orbitron text-cyan-300">+ List Item for Sale</button>
             </div>
             <div id="marketListings" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto flex-1 pr-1">
-                <!-- Live Listings -->
             </div>
         </div>
 
-        <!-- Mystery Chest View -->
         <div id="chestView" class="hidden flex-1 flex flex-col items-center justify-center">
             <div class="glass-panel p-8 rounded-2xl max-w-sm text-center border border-yellow-500/30">
                 <i class="fa-solid fa-box-open text-6xl text-yellow-400 mb-4 animate-bounce"></i>
@@ -262,7 +255,6 @@
         </div>
     </div>
 
-    <!-- LIST ITEM MODAL -->
     <div id="listItemModal" class="hidden absolute inset-0 z-40 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="glass-panel w-full max-w-sm p-6 rounded-2xl border border-cyan-500/40">
             <h3 class="font-orbitron font-bold text-cyan-300 mb-4">LIST ITEM ON MARKET</h3>
@@ -283,7 +275,6 @@
         </div>
     </div>
 
-    <!-- BLACKSMITH SCREEN -->
     <div id="blacksmithScreen" class="hidden absolute inset-0 z-20 bg-slate-950/95 p-6 flex flex-col">
         <div class="flex items-center justify-between pb-4 border-b border-slate-800">
             <h2 class="text-2xl font-orbitron font-bold text-amber-500 flex items-center gap-3">
@@ -304,7 +295,6 @@
         </div>
     </div>
 
-    <!-- HOW TO PLAY SCREEN -->
     <div id="howToPlayScreen" class="hidden absolute inset-0 z-20 bg-slate-950/95 p-6 flex flex-col">
         <div class="flex items-center justify-between pb-4 border-b border-slate-800">
             <h2 class="text-2xl font-orbitron font-bold text-cyan-400 flex items-center gap-3">
@@ -328,7 +318,6 @@
         </div>
     </div>
 
-    <!-- ACCOUNT SCREEN -->
     <div id="accountScreen" class="hidden absolute inset-0 z-20 bg-slate-950/95 p-6 flex flex-col">
         <div class="flex items-center justify-between pb-4 border-b border-slate-800">
             <h2 class="text-2xl font-orbitron font-bold text-cyan-400 flex items-center gap-3">
@@ -352,7 +341,6 @@
         </div>
     </div>
 
-    <!-- GAME HUD OVERLAY -->
     <div id="gameHud" class="hidden absolute inset-0 z-10 pointer-events-none p-6 flex flex-col justify-between">
         <div class="flex items-center justify-between pointer-events-auto">
             <div class="glass-panel px-4 py-2 rounded-xl flex items-center gap-6">
@@ -397,10 +385,15 @@
             remove 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-        // Project Configuration
         const firebaseConfig = {
-            projectId: "my-game-database-e99d8",
-            databaseURL: "https://my-game-database-e99d8-default-rtdb.firebaseio.com"
+          apiKey: "AIzaSyBvEpZvKbiFxnr1aDqzIu1vSRhHmMUhEyc",
+          authDomain: "my-game-database-e99d8.firebaseapp.com",
+          databaseURL: "https://my-game-database-e99d8-default-rtdb.firebaseio.com",
+          projectId: "my-game-database-e99d8",
+          storageBucket: "my-game-database-e99d8.firebasestorage.app",
+          messagingSenderId: "345507093937",
+          appId: "1:345507093937:web:04cc2840f1553674b63190",
+          measurementId: "G-FTCD4QBWWF"
         };
 
         let firebaseConnected = false;
@@ -415,7 +408,6 @@
             console.warn("Firebase initialization notice:", e);
         }
 
-        /* State Management */
         let currentUser = null;
         let isOfflineGuest = false;
 
@@ -437,7 +429,6 @@
             }
         };
 
-        /* Sound Effects */
         class SoundEffects {
             constructor() { this.ctx = null; }
             init() { if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)(); }
@@ -472,7 +463,6 @@
         }
         const sfx = new SoundEffects();
 
-        /* Authentication & Mode Switching */
         const authScreen = document.getElementById('authScreen');
         const mainMenu = document.getElementById('mainMenu');
         const authStatus = document.getElementById('authStatus');
@@ -624,9 +614,6 @@
             }
         }
 
-        /* ------------------------------------------------------------------
-           STREAMING_CHUNK:UI Rendering & Workshop Equip Management...
-           ------------------------------------------------------------------ */
         const screens = {
             workshop: document.getElementById('workshopScreen'),
             store: document.getElementById('storeScreen'),
@@ -656,7 +643,6 @@
             document.getElementById('accountBalance').innerText = playerProfile.balance;
             document.getElementById('goldDisplayWorkshop').innerHTML = `<i class="fa-solid fa-coins"></i> ${playerProfile.balance} Coins`;
 
-            // Render Workshop Slots
             const slotEls = document.querySelectorAll('#workshopSlots .equip-slot');
             slotEls.forEach(slotEl => {
                 const type = slotEl.dataset.slot;
@@ -687,7 +673,6 @@
                 };
             });
 
-            // Render Inventory
             const invContainer = document.getElementById('inventoryContainer');
             invContainer.innerHTML = '';
             (playerProfile.inventory || []).forEach((item, idx) => {
@@ -722,7 +707,6 @@
                 };
             });
 
-            // Populate Select Options
             const listItemSelect = document.getElementById('listItemSelect');
             const forgeSelect = document.getElementById('forgeSelect');
             listItemSelect.innerHTML = '';
@@ -733,7 +717,6 @@
             });
         }
 
-        /* Market & Store logic */
         const tabMarket = document.getElementById('tabMarket');
         const tabChest = document.getElementById('tabChest');
         const marketView = document.getElementById('marketView');
@@ -841,7 +824,6 @@
             await remove(listingRef);
         }
 
-        // Open Chest
         document.getElementById('btnOpenChest').addEventListener('click', () => {
             if (playerProfile.balance < 100) return alert("Requires 100 Coins!");
             playerProfile.balance -= 100;
@@ -861,7 +843,6 @@
             alert(`Chest Opened! Received: ${newItem.name} (+${newItem.power} Power)`);
         });
 
-        // Forge Upgrade
         document.getElementById('btnForgeUpgrade').addEventListener('click', () => {
             const idx = parseInt(document.getElementById('forgeSelect').value);
             if (isNaN(idx) || !playerProfile.inventory || playerProfile.inventory.length === 0) return;
@@ -873,9 +854,6 @@
             alert(`Successfully upgraded ${playerProfile.inventory[idx].name}!`);
         });
 
-        /* ------------------------------------------------------------------
-           STREAMING_CHUNK:2D Platformer Combat Engine Canvas Loop...
-           ------------------------------------------------------------------ */
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         let width = canvas.width = window.innerWidth;
@@ -990,7 +968,7 @@
                     if (enemy.hp <= 0) {
                         enemies.splice(idx, 1);
                         score += 100;
-                        playerProfile.balance += 25; // Coins drop on enemy defeat
+                        playerProfile.balance += 25;
                         saveProfile();
                     }
                 }
@@ -998,9 +976,10 @@
                 if (Math.abs(player.x - enemy.x) < 20 && Math.abs(player.y - enemy.y) < 20) {
                     player.health -= 0.5;
                     if (player.health <= 0) {
-                        alert("Game Over! Restarting stage...");
+                        alert('Game Over! Restarting stage...');
                         player.health = 100;
-                        player.x = 100; player.y = 100;
+                        player.x = 100;
+                        player.y = 100;
                     }
                 }
             });
@@ -1010,14 +989,15 @@
             document.getElementById('hudScore').innerText = score;
         }
 
-        function renderPlatformer() {
+        function render() {
+            ctx.clearRect(0, 0, width, height);
             ctx.fillStyle = '#06060c';
             ctx.fillRect(0, 0, width, height);
 
             if (gameState === 'MENU') {
-                ctx.fillStyle = 'rgba(0, 243, 255, 0.2)';
-                for(let i=0; i<30; i++) {
-                    ctx.fillRect((i*67)%width, (i*43)%height, 2, 2);
+                ctx.fillStyle = 'rgba(0, 243, 255, 0.1)';
+                for (let i = 0; i < 30; i++) {
+                    ctx.fillRect((i * 27) % width, (i * 43) % height, 2, 2);
                 }
                 return;
             }
@@ -1039,7 +1019,7 @@
             ctx.fillRect(player.x, player.y, player.w, player.h);
 
             if (player.attacking) {
-                ctx.fillStyle = 'rgba(255, 230, 0, 0.5)';
+                ctx.fillStyle = 'rgba(255, 50, 50, 0.5)';
                 ctx.beginPath();
                 ctx.arc(player.x + player.w / 2, player.y + player.h / 2, 35, 0, Math.PI * 2);
                 ctx.fill();
@@ -1048,7 +1028,7 @@
 
         function gameLoop() {
             updatePlatformer();
-            renderPlatformer();
+            render();
             requestAnimationFrame(gameLoop);
         }
 
